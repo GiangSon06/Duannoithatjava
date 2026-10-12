@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head(${pageTitle})}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<style>
+    /* LAYOUT 2 CỘT */
+    .shop-container {
+        display: flex;
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+        gap: 30px;
+    }
+
+    /* CỘT TRÁI: SIDEBAR BỘ LỌC */
+    .sidebar-filter {
+        width: 250px;
+        flex-shrink: 0; /* Không bị co lại */
+    }
+    .filter-box {
+        background: white;
+        border: 1px solid #eee;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .filter-title {
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #2c3e50;
+        text-transform: uppercase;
+        font-size: 14px;
+        border-bottom: 2px solid #bfa15f;
+        display: inline-block;
+        padding-bottom: 5px;
+    }
+    .filter-list { list-style: none; padding: 0; margin: 0; }
+    .filter-list li { margin-bottom: 10px; }
+    .filter-link {
+        text-decoration: none;
+        color: #555;
+        font-size: 14px;
+        display: block;
+        transition: 0.2s;
+    }
+    .filter-link:hover, .filter-link.active {
+        color: #bfa15f;
+        font-weight: bold;
+        transform: translateX(5px); /* Hiệu ứng đẩy nhẹ sang phải */
+    }
+    .filter-link i { margin-right: 8px; font-size: 12px; }
+
+    /* CỘT PHẢI: DANH SÁCH SP */
+    .main-content { flex: 1; }
+
+    /* Thanh công cụ phía trên (Toolbar) */
+    .shop-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #f9f9f9;
+        padding: 10px 20px;
+        border-radius: 5px;
+    }
+    .sort-select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        outline: none;
+    }
+
+    /* Grid sản phẩm */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 30px;
+    }
+    .product-card {
+        background: white; border: 1px solid #eee; border-radius: 8px;
+        overflow: hidden; transition: 0.3s; position: relative;
+    }
+    .product-card:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.1); transform: translateY(-5px); }
+    .product-img { width: 100%; height: 220px; object-fit: cover; }
+    .product-info { padding: 15px; text-align: center; }
+    .product-name { font-weight: bold; color: #333; text-decoration: none; display: block; margin-bottom: 5px; }
+    .product-price { color: #e74c3c; font-weight: bold; font-size: 16px; }
+
+    /* Responsive mobile */
+    @media (max-width: 768px) {
+        .shop-container { flex-direction: column; }
+        .sidebar-filter { width: 100%; }
+    }
+
+    /* Pagination CSS */
+    .pagination { display: flex; justify-content: center; margin-top: 40px; gap: 5px; }
+    .page-link { padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; color: #333; border-radius: 4px; }
+    .page-link.active { background: #bfa15f; color: white; border-color: #bfa15f; }
+</style>
+
+<div class="shop-container">
+
+    <aside class="sidebar-filter">
+
+        <div class="filter-box">
+            <div class="filter-title">Danh mục sản phẩm</div>
+            <ul class="filter-list">
+                <li><a th:href="'products.php' + ${qsNoCate.isEmpty() ? '' : '?' + qsNoCate}" class="filter-link" th:classappend="${cateId == 0} ? 'active'">
+                    <i class="fas fa-circle"></i> Tất cả
+                </a></li>
+                <li><a th:href="'?cate=3&amp;' + ${qsNoCate}" class="filter-link" th:classappend="${cateId == 3} ? 'active'">
+                    <i class="fas fa-couch"></i> Phòng khách
+                </a></li>
+                <li><a th:href="'?cate=1&amp;' + ${qsNoCate}" class="filter-link" th:classappend="${cateId == 1} ? 'active'">
+                    <i class="fas fa-bed"></i> Phòng ngủ
+                </a></li>
+                <li><a th:href="'?cate=2&amp;' + ${qsNoCate}" class="filter-link" th:classappend="${cateId == 2} ? 'active'">
+                    <i class="fas fa-utensils"></i> Phòng ăn
+                </a></li>
+                <li><a th:href="'?cate=4&amp;' + ${qsNoCate}" class="filter-link" th:classappend="${cateId == 4} ? 'active'">
+                    <i class="fas fa-book"></i> Học tập
+                </a></li>
+            </ul>
+        </div>
+
+        <div class="filter-box">
+            <div class="filter-title">Khoảng giá</div>
+            <ul class="filter-list">
+                <li><a th:href="'products.php' + ${cateId > 0 ? '?cate=' + cateId : ''}" class="filter-link" th:classappend="${priceRange == '' or priceRange == 'all'} ? 'active'">
+                    <i class="far fa-square"></i> Tất cả mức giá
+                </a></li>
+                <li><a th:href="'?price=duoi-2-trieu&amp;' + ${qsNoPrice}" class="filter-link" th:classappend="${priceRange == 'duoi-2-trieu'} ? 'active'">
+                    <i class="far fa-check-square"></i> Dưới 2 triệu
+                </a></li>
+                <li><a th:href="'?price=2-den-5-trieu&amp;' + ${qsNoPrice}" class="filter-link" th:classappend="${priceRange == '2-den-5-trieu'} ? 'active'">
+                    <i class="far fa-check-square"></i> Từ 2 - 5 triệu
+                </a></li>
+                <li><a th:href="'?price=5-den-10-trieu&amp;' + ${qsNoPrice}" class="filter-link" th:classappend="${priceRange == '5-den-10-trieu'} ? 'active'">
+                    <i class="far fa-check-square"></i> Từ 5 - 10 triệu
+                </a></li>
+                <li><a th:href="'?price=tren-10-trieu&amp;' + ${qsNoPrice}" class="filter-link" th:classappend="${priceRange == 'tren-10-trieu'} ? 'active'">
+                    <i class="far fa-check-square"></i> Trên 10 triệu
+                </a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <div class="shop-toolbar">
+            <div>Tìm thấy <strong th:text="${total}">0</strong> sản phẩm</div>
+
+            <form method="GET" id="sortForm">
+                <input type="hidden" name="cate" th:if="${cateId > 0}" th:value="${cateId}">
+                <input type="hidden" name="price" th:if="${priceRange != ''}" th:value="${priceRange}">
+
+                <select name="sort" class="sort-select" onchange="document.getElementById('sortForm').submit()">
+                    <option value="">Sắp xếp mặc định</option>
+                    <option value="price_asc" th:selected="${sortKey == 'price_asc'}">Giá: Thấp đến Cao</option>
+                    <option value="price_desc" th:selected="${sortKey == 'price_desc'}">Giá: Cao đến Thấp</option>
+                    <option value="name_asc" th:selected="${sortKey == 'name_asc'}">Tên: A - Z</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="product-grid">
+            <div class="product-card" th:each="row : ${products}"
+                 th:with="imgUrl=${(row.image_url != null and !row.image_url.isEmpty()) ? row.image_url : 'picture/no-image.svg'}"
+                 th:attr="data-id=${row.id},data-name=${row.name},data-price=${row.price},data-img=${imgUrl}">
+
+                <a th:href="@{/product_detail.php(id=${row.id})}">
+                    <img th:src="${imgUrl}" th:alt="${row.name}" class="product-img">
+                </a>
+                <div class="product-info">
+                    <a th:href="@{/product_detail.php(id=${row.id})}" class="product-name" th:text="${row.name}">Tên</a>
+                    <div class="product-price" th:text="${#numbers.formatInteger(row.price, 1, 'COMMA')} + 'đ'">0đ</div>
+                    <div class="product-card-btns">
+                        <button type="button" class="btn-add-cart" onclick="addToCart(this)">Thêm vào giỏ</button>
+                        <button type="button" class="btn-buy-now" onclick="buyNow(this)">Mua ngay</button>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(products)}" style="text-align:center; grid-column:1/-1; padding:50px;">
+                <p>Không tìm thấy sản phẩm nào phù hợp tiêu chí lọc.</p>
+                <a href="products.php" style="color:#bfa15f">Xóa bộ lọc</a>
+            </div>
+        </div>
+
+        <div class="pagination" th:if="${totalPages > 1}">
+            <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+               th:href="'?page=' + ${i} + '&amp;' + ${qsNoPage}"
+               class="page-link" th:classappend="${i == pageNo} ? 'active'" th:text="${i}">1</a>
+        </div>
+
+    </main>
+</div>
+
+<script th:inline="none">
+    function normalizeText(str) {
+        return (str || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[đĐ]/g, "d")
+            .toLowerCase()
+            .trim();
+    }
+
+    function isMatch(keyword, productName) {
+        if (!keyword) return true;
+        const kwNorm   = normalizeText(keyword);
+        const nameNorm = normalizeText(productName);
+        const kwOrig   = keyword.toLowerCase().trim();
+        const nameOrig = productName.toLowerCase().trim();
+        return nameNorm.includes(kwNorm) || nameOrig.includes(kwOrig);
+    }
+
+    (function () {
+        const box = document.getElementById("search-box");
+        if (!box) return;
+
+        const grid = document.querySelector(".product-grid");
+        if (!grid) return;
+
+        const originalOrder = Array.from(grid.querySelectorAll(".product-card"));
+
+        box.addEventListener("input", function () {
+            const kw = this.value.trim();
+            const cards = Array.from(grid.querySelectorAll(".product-card"));
+
+            if (kw === "") {
+                originalOrder.forEach((card) => {
+                    grid.appendChild(card);
+                    card.style.opacity = "1";
+                    card.style.transform = "";
+                    card.style.pointerEvents = "";
+                });
+                return;
+            }
+
+            const matched = [];
+            const unmatched = [];
+
+            cards.forEach((card) => {
+                const name = card.getAttribute("data-name") || "";
+                if (isMatch(kw, name)) matched.push(card);
+                else unmatched.push(card);
+            });
+
+            [...matched, ...unmatched].forEach((card) => grid.appendChild(card));
+
+            matched.forEach((card) => {
+                card.style.transition = "opacity 0.25s, transform 0.25s";
+                card.style.opacity = "1";
+                card.style.transform = "";
+                card.style.pointerEvents = "";
+            });
+            unmatched.forEach((card) => {
+                card.style.transition = "opacity 0.25s, transform 0.25s";
+                card.style.opacity = "0.2";
+                card.style.transform = "scale(0.96)";
+                card.style.pointerEvents = "none";
+            });
+        });
+    })();
+</script>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

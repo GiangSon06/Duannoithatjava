@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Quản lý người dùng — GS LUXURY Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+        <div class="admin-page-title" style="margin:0"><i class="fas fa-users"></i> Quản lý người dùng
+            <span style="font-size:13px;color:#aaa;font-weight:400;margin-left:6px" th:text="'(' + ${#lists.size(users)} + ' người)'"></span>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
+        <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px">
+            <div style="width:42px;height:42px;background:#eaf4fd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">👥</div>
+            <div>
+                <div style="font-size:11px;color:#999;text-transform:uppercase">Tổng người dùng</div>
+                <div style="font-size:22px;font-weight:700;color:#3498db" th:text="${totalUsers}">0</div>
+            </div>
+        </div>
+        <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px">
+            <div style="width:42px;height:42px;background:#eafaf1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">✨</div>
+            <div>
+                <div style="font-size:11px;color:#999;text-transform:uppercase">Đăng ký hôm nay</div>
+                <div style="font-size:22px;font-weight:700;color:#27ae60" th:text="${newToday}">0</div>
+            </div>
+        </div>
+        <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px">
+            <div style="width:42px;height:42px;background:#fdeaea;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🔒</div>
+            <div>
+                <div style="font-size:11px;color:#999;text-transform:uppercase">Đang bị khóa</div>
+                <div style="font-size:22px;font-weight:700;color:#e74c3c" th:text="${lockedCount}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${param.updated != null}" style="background:#eafaf1;color:#27ae60;border:1px solid #a3e4d7;padding:12px 18px;border-radius:8px;margin-bottom:16px;font-size:13px;font-weight:600">
+        <i class="fas fa-check-circle"></i> Đã cập nhật trạng thái tài khoản thành công!
+    </div>
+
+    <!-- DANH SÁCH NGƯỜI DÙNG -->
+    <div class="admin-card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div class="card-title" style="margin:0"><i class="fas fa-users"></i> Danh sách người dùng</div>
+            <form method="GET" style="display:flex;gap:8px">
+                <input type="text" name="q" th:value="${param.q}" placeholder="Tìm theo tên, email..." class="form-control" style="width:220px">
+                <button type="submit" class="btn btn-primary" style="padding:8px 14px"><i class="fas fa-search"></i></button>
+                <a th:if="${param.q != null}" href="/admin_users.php" class="btn btn-secondary" style="padding:8px 14px">✕</a>
+            </form>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Người dùng</th>
+                    <th>Email</th>
+                    <th>Ngày đăng ký</th>
+                    <th>Đơn hàng</th>
+                    <th>Tổng chi tiêu</th>
+                    <th>Đơn gần nhất</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="u, iterStat : ${users}" th:style="${u.is_locked == 1 or u.is_locked == true} ? 'background:#fff8f8' : ''">
+                    <td th:text="${iterStat.index + 1}"></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div th:if="${u.avatar != null and !u.avatar.isEmpty()}">
+                                <img th:src="${u.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
+                            </div>
+                            <div th:unless="${u.avatar != null and !u.avatar.isEmpty()}"
+                                 style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#bfa15f,#d4b870);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px"
+                                 th:text="${u.username != null ? u.username.substring(0,1).toUpperCase() : '?'}">U</div>
+                                <div style="display:flex;align-items:center;gap:6px">
+                                    <span style="font-weight:600;color:#1a1f2e" th:text="${u.username}"></span>
+                                    <span th:if="${u.role == 'admin'}" style="background:#e8352a;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700">ADMIN</span>
+                                </div>
+                        </div>
+                    </td>
+                    <td style="font-size:12px;color:#555" th:text="${u.email}"></td>
+                    <td style="font-size:12px;color:#aaa"
+                        th:text="${u.created_at != null ? #dates.format(u.created_at, 'dd/MM/yyyy') : '—'}"></td>
+                    <td style="font-weight:700;color:#3498db" th:text="${u.order_count}">0</td>
+                    <td style="font-weight:700;color:#e74c3c" th:text="${#numbers.formatInteger(u.total_spent, 1, 'COMMA')} + 'đ'">0đ</td>
+                    <td style="font-size:12px;color:#aaa"
+                        th:text="${u.last_order != null ? #dates.format(u.last_order, 'dd/MM/yyyy') : '—'}"></td>
+                    <td>
+                        <span th:if="${u.is_locked == 1 or u.is_locked == true}" style="background:#fdeaea;color:#e74c3c;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700">🔒 Bị khóa</span>
+                        <span th:unless="${u.is_locked == 1 or u.is_locked == true}" style="background:#eafaf1;color:#27ae60;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700">✅ Hoạt động</span>
+                    </td>
+                    <td>
+                        <form method="post" action="/admin_users.php" th:if="${u.role != 'admin'}" style="margin:0">
+                            <input type="hidden" name="action" value="toggle_lock">
+                            <input type="hidden" name="id" th:value="${u.id}">
+                            <button type="submit" class="btn"
+                                    th:classappend="${u.is_locked == 1 or u.is_locked == true} ? 'btn-success' : 'btn-danger'"
+                                    style="font-size:11px;padding:5px 12px;font-weight:600;display:inline-flex;align-items:center;gap:5px"
+                                    th:onclick="${u.is_locked == 1 or u.is_locked == true} ? 'return confirm(\'Bạn có chắc muốn MỞ KHÓA tài khoản này?\')' : 'return confirm(\'Bạn có chắc muốn KHÓA tài khoản này?\')'">
+                                <i th:class="${u.is_locked == 1 or u.is_locked == true} ? 'fas fa-unlock' : 'fas fa-lock'"></i>
+                                <span th:text="${u.is_locked == 1 or u.is_locked == true} ? 'Mở khóa' : 'Khóa'"></span>
+                            </button>
+                        </form>
+                        <span th:if="${u.role == 'admin'}" style="color:#aaa;font-size:12px">Admin</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="9" style="text-align:center;color:#aaa;padding:30px">Chưa có người dùng nào</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

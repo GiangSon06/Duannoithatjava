@@ -1,0 +1,24 @@
+package vn.sland.service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.net.URI;
+import java.net.http.*;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.*;
+
+@Service
+public class MomoService {
+    private final String partnerCode,accessKey,secretKey,endpoint,redirectUrl,ipnUrl;private final ObjectMapper mapper;private final HttpClient http=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    public MomoService(ObjectMapper mapper,@Value("${app.momo.partner-code:MOMO}")String partnerCode,@Value("${app.momo.access-key:}")String accessKey,@Value("${app.momo.secret-key:}")String secretKey,@Value("${app.momo.endpoint:https://test-payment.momo.vn/v2/gateway/api/create}")String endpoint,@Value("${app.momo.redirect-url:http://localhost:8080/momo_return.php}")String redirectUrl,@Value("${app.momo.ipn-url:http://localhost:8080/momo_ipn.php}")String ipnUrl){this.mapper=mapper;this.partnerCode=partnerCode;this.accessKey=accessKey;this.secretKey=secretKey;this.endpoint=endpoint;this.redirectUrl=redirectUrl;this.ipnUrl=ipnUrl;}
+    public boolean configured(){return !accessKey.isBlank()&&!secretKey.isBlank();}
+    public Map<String,Object> createPayment(String orderId,long amount,String orderInfo,String extraData){if(!configured())return Map.of("resultCode",99,"message","MoMo chưa được cấu hình MOMO_ACCESS_KEY/MOMO_SECRET_KEY");try{String requestId=orderId+"-"+System.currentTimeMillis(),requestType="captureWallet";String raw="accessKey="+accessKey+"&amount="+amount+"&extraData="+extraData+"&ipnUrl="+ipnUrl+"&orderId="+orderId+"&orderInfo="+orderInfo+"&partnerCode="+partnerCode+"&redirectUrl="+redirectUrl+"&requestId="+requestId+"&requestType="+requestType;String sig=hmac(raw);Map<String,Object>b=new LinkedHashMap<>();b.put("partnerCode",partnerCode);b.put("partnerName","SLAND");b.put("storeId","SLAND");b.put("requestId",requestId);b.put("amount",amount);b.put("orderId",orderId);b.put("orderInfo",orderInfo);b.put("redirectUrl",redirectUrl);b.put("ipnUrl",ipnUrl);b.put("lang","vi");b.put("requestType",requestType);b.put("autoCapture",true);b.put("extraData",extraData);b.put("signature",sig);HttpRequest req=HttpRequest.newBuilder(URI.create(endpoint)).timeout(Duration.ofSeconds(20)).header("Content-Type","application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(b))).build();HttpResponse<String>res=http.send(req,HttpResponse.BodyHandlers.ofString());return mapper.readValue(res.body(),new TypeReference<>(){});}catch(Exception e){return Map.of("resultCode",98,"message",e.getMessage()==null?"MoMo error":e.getMessage());}}
+    public boolean verifyCallback(Map<String,?> p){if(!configured())return false;try{String raw="accessKey="+accessKey+"&amount="+p.get("amount")+"&extraData="+nv(p.get("extraData"))+"&message="+nv(p.get("message"))+"&orderId="+p.get("orderId")+"&orderInfo="+nv(p.get("orderInfo"))+"&orderType="+nv(p.get("orderType"))+"&partnerCode="+p.get("partnerCode")+"&payType="+nv(p.get("payType"))+"&requestId="+p.get("requestId")+"&responseTime="+p.get("responseTime")+"&resultCode="+p.get("resultCode")+"&transId="+p.get("transId");return hmac(raw).equalsIgnoreCase(nv(p.get("signature")));}catch(Exception e){return false;}}
+    private String nv(Object x){return x==null?"":String.valueOf(x);}private String hmac(String raw)throws Exception{Mac mac=Mac.getInstance("HmacSHA256");mac.init(new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8),"HmacSHA256"));byte[]h=mac.doFinal(raw.getBytes(StandardCharsets.UTF_8));StringBuilder s=new StringBuilder();for(byte b:h)s.append(String.format("%02x",b));return s.toString();}
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head('Đặt hàng thành công')}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<style>
+.success-wrap {
+    max-width:680px; margin:50px auto; padding:0 20px;
+}
+.success-card {
+    background:white; border:1px solid #eee; border-radius:18px;
+    padding:48px 40px; text-align:center;
+    box-shadow:0 4px 32px rgba(0,0,0,0.06);
+}
+.check-circle {
+    width:90px; height:90px; border-radius:50%;
+    background:linear-gradient(135deg,#27ae60,#2ecc71);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 24px; font-size:36px; color:white;
+    box-shadow:0 8px 24px rgba(39,174,96,0.3);
+    animation:popIn .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.success-title { font-size:26px; font-weight:800; color:#1a1f2e; margin-bottom:8px; }
+.success-sub   { font-size:15px; color:#888; margin-bottom:30px; }
+.order-code {
+    display:inline-block; background:linear-gradient(135deg,#bfa15f,#d4b870);
+    color:white; font-size:20px; font-weight:800; padding:10px 30px;
+    border-radius:12px; margin-bottom:28px; letter-spacing:1px;
+}
+
+/* Info rows */
+.info-card { background:#f8f9fb; border-radius:12px; padding:20px; text-align:left; margin-bottom:24px; }
+.info-row { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f0f0f0; font-size:14px; flex-wrap:wrap; gap:6px; }
+.info-row:last-child { border:none; }
+.info-row .lbl { color:#888; }
+.info-row .val { font-weight:600; color:#1a1f2e; text-align:right; }
+
+/* Delivery estimate */
+.delivery-banner {
+    background:linear-gradient(135deg,#e8f5e9,#f0f9ff);
+    border:1px solid #b2dfdb; border-radius:12px; padding:16px 20px;
+    display:flex; align-items:center; gap:14px; margin-bottom:24px;
+}
+.delivery-icon { font-size:32px; }
+
+/* QR */
+.qr-section { text-align:center; margin:20px 0; }
+.qr-section img { width:220px; border-radius:12px; border:4px solid #bfa15f; }
+.qr-note { font-size:13px; color:#888; margin-top:10px; }
+
+/* Buttons */
+.success-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+.btn-primary { display:inline-flex; align-items:center; gap:8px; padding:12px 28px; background:#bfa15f; color:white; border-radius:30px; text-decoration:none; font-weight:700; font-size:14px; transition:.2s; }
+.btn-primary:hover { background:#a8894e; transform:translateY(-1px); }
+.btn-secondary { display:inline-flex; align-items:center; gap:8px; padding:12px 28px; background:#f5f5f5; color:#333; border-radius:30px; text-decoration:none; font-weight:700; font-size:14px; transition:.2s; }
+.btn-secondary:hover { background:#eee; }
+</style>
+
+<div class="success-wrap">
+    <div class="success-card">
+        <!-- Check icon -->
+        <div class="check-circle">✓</div>
+
+        <div class="success-title">Đặt hàng thành công!</div>
+        <div class="success-sub">Cảm ơn bạn đã tin tưởng mua hàng tại GS LUXURY 🎉</div>
+
+        <div class="order-code" th:text="'Đơn #' + ${result.orderId}">Đơn #0</div>
+
+        <!-- Thông tin đơn -->
+        <div class="info-card">
+            <div class="info-row">
+                <span class="lbl">Tổng thanh toán</span>
+                <span class="val" style="color:#e74c3c;font-size:16px;"
+                      th:text="${#numbers.formatInteger(result.total, 1, 'COMMA')} + 'đ'">0đ</span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Phương thức</span>
+                <span class="val" th:text="${payment == 'cod' ? '💵 Thanh toán COD (trả khi nhận hàng)' :
+                                             payment == 'banking' ? '🏦 Chuyển khoản ngân hàng' :
+                                             '💜 Ví MoMo'}"></span>
+            </div>
+            <div class="info-row" th:if="${result.deliveryNote != null}">
+                <span class="lbl">Ghi chú</span>
+                <span class="val" th:text="${result.deliveryNote}"></span>
+            </div>
+        </div>
+
+        <!-- Delivery banner -->
+        <div class="delivery-banner" th:if="${estimatedDisplay != null}">
+            <div class="delivery-icon">🚛</div>
+            <div style="text-align:left;">
+                <div style="font-size:11px;color:#888;text-transform:uppercase;margin-bottom:2px;">Dự kiến giao hàng</div>
+                <div style="font-size:17px;font-weight:700;color:#1a1f2e;" th:text="${estimatedDisplay}"></div>
+            </div>
+        </div>
+
+        <!-- QR cho banking -->
+        <div class="qr-section" th:if="${payment == 'banking'}">
+            <h3 style="font-size:16px;font-weight:700;color:#1a1f2e;margin-bottom:14px;">
+                📱 Quét mã VietQR để thanh toán
+            </h3>
+            <img th:src="'https://img.vietqr.io/image/MB-0326976832-compact2.png?amount='
+                         + ${result.total} + '&addInfo=THANHTOAN%20DON%20' + ${result.orderId}"
+                 alt="VietQR">
+            <div class="qr-note">
+                Mở app ngân hàng → Quét mã → Chuyển khoản tự động<br>
+                Đơn hàng sẽ được xử lý sau khi nhận được thanh toán.
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="success-btns">
+            <a href="/index.php" class="btn-primary">
+                <i class="fas fa-store"></i> Tiếp tục mua sắm
+            </a>
+            <a th:href="@{/order_detail.php(id=${result.orderId})}" class="btn-secondary">
+                <i class="fas fa-eye"></i> Xem chi tiết đơn
+            </a>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+
+<script>
+    // Xóa giỏ hàng trong localStorage sau khi đặt hàng thành công
+    try {
+        localStorage.removeItem("MY_CART");
+        if (typeof cart !== 'undefined') cart = [];
+        if (typeof updateCartUI === 'function') updateCartUI();
+        const cc = document.getElementById("cart-count");
+        if (cc) {
+            cc.innerText = "0";
+            cc.style.display = "none";
+        }
+    } catch(e) {
+        console.error("Cart clear error:", e);
+    }
+</script>
+</body>
+</html>

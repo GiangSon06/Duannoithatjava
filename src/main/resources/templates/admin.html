@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Admin Dashboard — GS LUXURY</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <div class="admin-page-title"><i class="fas fa-chart-pie"></i> Dashboard</div>
+
+    <!-- STAT CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+        <div style="background:white;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.05)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                    <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Tổng đơn hàng</div>
+                    <div style="font-size:28px;font-weight:800;color:#1a1f2e" th:text="${ordersCount}">0</div>
+                    <div style="font-size:12px;color:#f39c12;margin-top:4px" th:if="${pending != null and pending != 0}">
+                        <i class="fas fa-clock"></i> <span th:text="${pending}"></span> chờ xử lý
+                    </div>
+                </div>
+                <div style="width:48px;height:48px;background:#fff3cd;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">📦</div>
+            </div>
+        </div>
+        <div style="background:white;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.05)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                    <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sản phẩm</div>
+                    <div style="font-size:28px;font-weight:800;color:#1a1f2e" th:text="${productsCount}">0</div>
+                    <div style="font-size:12px;color:#e74c3c;margin-top:4px" th:if="${lowStock != null and lowStock != 0}">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${lowStock}"></span> sắp hết hàng
+                    </div>
+                </div>
+                <div style="width:48px;height:48px;background:#eaf4fd;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🛒</div>
+            </div>
+        </div>
+        <div style="background:white;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.05)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                    <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Người dùng</div>
+                    <div style="font-size:28px;font-weight:800;color:#1a1f2e" th:text="${usersCount}">0</div>
+                    <div style="font-size:12px;color:#27ae60;margin-top:4px" th:if="${newContacts != null and newContacts != 0}">
+                        <i class="fas fa-envelope"></i> <span th:text="${newContacts}"></span> liên hệ mới
+                    </div>
+                </div>
+                <div style="width:48px;height:48px;background:#eafaf1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">👥</div>
+            </div>
+        </div>
+        <div style="background:white;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.05)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                    <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Doanh thu</div>
+                    <div style="font-size:22px;font-weight:800;color:#bfa15f"
+                          th:text="${#numbers.formatInteger(revenue, 1, 'COMMA')} + 'đ'">0đ</div>
+                    <div style="font-size:12px;color:#999;margin-top:4px">Tổng tất cả thời gian</div>
+                </div>
+                <div style="width:48px;height:48px;background:#fdf6e3;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">💰</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px">
+        <!-- Revenue chart (7 days) -->
+        <div class="admin-card">
+            <div class="card-title" style="margin-bottom:16px"><i class="fas fa-chart-line"></i> Doanh thu 7 ngày gần nhất</div>
+            <canvas id="revenueChart" height="200"></canvas>
+        </div>
+        <!-- Status chart -->
+        <div class="admin-card">
+            <div class="card-title" style="margin-bottom:16px"><i class="fas fa-chart-donut"></i> Phân bổ đơn hàng theo trạng thái</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center">
+                <canvas id="statusChart" height="200"></canvas>
+                <div id="statusLegend" style="font-size:13px"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLES ROW -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        <!-- Top products -->
+        <div class="admin-card">
+            <div class="card-title" style="margin-bottom:14px"><i class="fas fa-fire"></i> Top 5 sản phẩm bán chạy</div>
+            <div th:if="${#lists.isEmpty(topProducts)}" style="text-align:center;color:#aaa;padding:20px;font-size:13px">
+                Chưa có dữ liệu
+            </div>
+            <div th:each="p, iterStat : ${topProducts}" style="margin-bottom:14px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                    <div style="font-size:13px;font-weight:600;color:#1a1f2e;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                         th:text="${p.name}">SP</div>
+                    <div style="font-size:12px;color:#bfa15f;font-weight:700" th:text="${p.sold} + ' sp'">0 sp</div>
+                </div>
+                <div style="background:#f0f0f0;border-radius:4px;height:5px">
+                    <div th:style="'background:linear-gradient(90deg,#bfa15f,#d4b870);height:5px;border-radius:4px;width:' + ${topProducts[0].sold > 0 ? #numbers.formatDecimal(p.sold * 100.0 / topProducts[0].sold, 1, 0) : 0} + '%'"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low stock products -->
+        <div class="admin-card" th:if="${!#lists.isEmpty(lowProducts)}">
+            <div class="card-title" style="margin-bottom:14px"><i class="fas fa-exclamation-triangle" style="color:#e74c3c"></i> Sản phẩm sắp hết hàng</div>
+            <table class="admin-table">
+                <thead>
+                    <tr><th>Sản phẩm</th><th>Tồn kho</th><th></th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="p : ${lowProducts}">
+                        <td th:text="${p.name}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${p.quantity == 0} ? 'badge-danger' : 'badge-warning'"
+                                  th:text="${p.quantity == 0 ? 'Hết hàng' : p.quantity + ' còn lại'}"></span>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin_edit_product.php(id=${p.id})}" class="btn btn-secondary" style="font-size:12px;padding:5px 12px">
+                                <i class="fas fa-edit"></i> Sửa
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ĐƠN HÀNG GẦN ĐÂY -->
+    <div class="admin-card" id="orders-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div class="card-title"><i class="fas fa-receipt"></i> Đơn hàng gần đây</div>
+            <div style="display:flex;gap:8px">
+                <a href="/admin_orders.php" class="btn btn-primary" style="font-size:12px;padding:6px 14px">
+                    <i class="fas fa-shopping-bag"></i> Quản lý tất cả đơn hàng
+                </a>
+                <a href="/admin_stats.php" class="btn btn-secondary" style="font-size:12px;padding:6px 14px">
+                    <i class="fas fa-chart-bar"></i> Thống kê đầy đủ
+                </a>
+            </div>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Cập nhật</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="o : ${recentOrders}">
+                    <td style="font-weight:700;color:#bfa15f" th:text="'#' + ${o.id}"></td>
+                    <td th:text="${o.fullname}"></td>
+                    <td style="font-weight:700" th:text="${#numbers.formatInteger(o.total_money, 1, 'COMMA')} + 'đ'"></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${o.status == 'Đã giao hàng' or o.status == 'Đã giao'} ? 'badge-success' :
+                                             (${o.status == 'Đã hủy'} ? 'badge-danger' :
+                                             (${o.status == 'Đang giao' or o.status == 'Đang giao hàng'} ? 'badge-info' : 'badge-warning'))"
+                              th:text="${o.status}">-</span>
+                    </td>
+                    <td>
+                        <form method="post" action="/update_order_status.php" style="display:flex;gap:6px">
+                            <input type="hidden" name="order_id" th:value="${o.id}">
+                            <select name="status" class="form-control" style="font-size:12px;padding:5px 8px"
+                                    th:attr="data-current-status=${o.status}"
+                                    onchange="handleStatusChange(this)">
+                                <option th:each="st : ${ {'Chờ xử lý','Đang chuẩn bị','Đang giao','Đã giao hàng','Đã hủy'} }"
+                                        th:value="${st}" th:text="${st}"
+                                        th:selected="${st == o.status}"
+                                        th:disabled="${st == 'Chờ xử lý' and (o.status == 'Đang giao' or o.status == 'Đã giao hàng')}"></option>
+                            </select>
+                            <button type="submit" class="btn btn-primary" style="padding:5px 10px;font-size:12px" title="Lưu trạng thái">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </form>
+                    </td>
+                    <td>
+                        <a th:href="@{/order_detail.php(id=${o.id})}" class="btn btn-secondary" style="font-size:12px;padding:5px 12px">
+                            Chi tiết
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+const statusData = /*[[${statusChart}]]*/ [];
+if (statusData.length > 0) {
+    const labels = statusData.map(s => s.status);
+    const values = statusData.map(s => s.total);
+    const colorMap = {
+        'Chờ xử lý': '#f39c12',       // Màu cam/vàng hổ phách
+        'Đang chuẩn bị': '#e67e22',   // Màu cam đậm
+        'Đã xác nhận': '#9b59b6',     // Màu tím
+        'Đang giao': '#3498db',       // Màu xanh dương
+        'Đang giao hàng': '#2980b9',  // Màu xanh dương đậm
+        'Đã giao': '#27ae60',         // Màu xanh lá
+        'Đã giao hàng': '#27ae60',    // Màu xanh lá
+        'Đã hủy': '#e74c3c'           // Màu đỏ
+    };
+    const fallbackPalette = ['#f39c12', '#3498db', '#27ae60', '#e74c3c', '#9b59b6', '#1abc9c', '#34495e'];
+    const colors = labels.map((l, idx) => colorMap[l] || fallbackPalette[idx % fallbackPalette.length]);
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+        options: { cutout: '60%', plugins: { legend: { display: false } } }
+    });
+    // Custom legend
+    const lg = document.getElementById('statusLegend');
+    labels.forEach((l, i) => {
+        lg.innerHTML += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="width:12px;height:12px;border-radius:3px;background:${colors[i]};flex-shrink:0"></div>
+            <span style="color:#555">${l}</span>
+            <span style="margin-left:auto;font-weight:700;color:#1a1f2e">${values[i]}</span>
+        </div>`;
+    });
+}
+// Revenue chart (7 days)
+const revenueLabels = /*[[${weeklyLabels}]]*/ [];
+const revenueData = /*[[${weeklyData}]]*/ [];
+if (revenueLabels.length > 0) {
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Doanh thu (đ)',
+                data: revenueData,
+                backgroundColor: 'rgba(191,161,95,0.2)',
+                borderColor: '#bfa15f',
+                borderWidth: 1.5,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { callback: v => (v/1000000).toFixed(1)+'M', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+}
+/*]]>*/
+function handleStatusChange(sel) {
+    const curStatus = sel.getAttribute('data-current-status');
+    const choXuLyOpt = sel.querySelector('option[value="Chờ xử lý"]');
+    if (choXuLyOpt) {
+        if (curStatus === 'Đang giao' || curStatus === 'Đã giao hàng' || sel.value === 'Đang giao' || sel.value === 'Đã giao hàng') {
+            choXuLyOpt.disabled = true;
+        } else {
+            choXuLyOpt.disabled = false;
+        }
+    }
+}
+</script>
+
+</body>
+</html>

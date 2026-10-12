@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Quản lý sản phẩm — GS LUXURY Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+        <div class="admin-page-title" style="margin:0"><i class="fas fa-box"></i> Quản lý sản phẩm
+            <span style="font-size:13px;color:#aaa;font-weight:400;margin-left:6px" th:text="'(' + ${#lists.size(products)} + ' sản phẩm)'"></span>
+        </div>
+        <a href="/admin_add_product.php" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm sản phẩm
+        </a>
+    </div>
+
+    <!-- Alert for deleted product -->
+    <div th:if="${param.deleted != null}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i> Đã xóa sản phẩm thành công!
+    </div>
+
+    <!-- STAT ROW -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
+        <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px">
+            <div style="width:42px;height:42px;background:#eaf4fd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">📦</div>
+            <div>
+                <div style="font-size:11px;color:#999;text-transform:uppercase">Tổng sản phẩm</div>
+                <div style="font-size:22px;font-weight:700;color:#1a1f2e" th:text="${totalProducts}">0</div>
+            </div>
+        </div>
+        <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px">
+            <div style="width:42px;height:42px;background:#fef9e7;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#f39c12;font-size:18px">⚠️</div>
+            <div>
+                <div style="font-size:11px;color:#999;text-transform:uppercase">Sắp hết hàng (≤5)</div>
+                <div style="font-size:22px;font-weight:700;color:#f39c12" th:text="${lowStock}">0</div>
+            </div>
+        </div>
+        <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px">
+            <div style="width:42px;height:42px;background:#fdeaea;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#e74c3c;font-size:18px">❌</div>
+            <div>
+                <div style="font-size:11px;color:#999;text-transform:uppercase">Hết hàng</div>
+                <div style="font-size:22px;font-weight:700;color:#e74c3c" th:text="${outOfStock}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search bar -->
+    <div class="admin-card" style="padding:14px 20px;margin-bottom:16px">
+        <input type="text" id="searchInput" class="form-control" style="width:100%;box-sizing:border-box"
+               placeholder="🔍 Tìm kiếm sản phẩm theo tên, danh mục..." oninput="filterTable()">
+    </div>
+
+    <div class="admin-card" style="padding:0;overflow:hidden">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width:50px">ID</th>
+                    <th style="width:70px">Ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Giá</th>
+                    <th>Danh mục</th>
+                    <th>Tồn kho</th>
+                    <th style="width:120px">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="productTable">
+                <tr th:each="p : ${products}">
+                    <td style="font-weight:700;color:#aaa" th:text="${p.id}"></td>
+                    <td>
+                        <img th:src="${p.image_url != null and !p.image_url.isEmpty() ? p.image_url : '/picture/no-image.svg'}"
+                             style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid #f0f0f0">
+                    </td>
+                    <td>
+                        <div style="font-weight:700;color:#1a1f2e" th:text="${p.name}"></div>
+                        <div th:if="${p.old_price != null and p.old_price > 0}" style="font-size:11px;color:#aaa;text-decoration:line-through;margin-top:2px"
+                             th:text="${#numbers.formatInteger(p.old_price, 1, 'COMMA')} + 'đ'"></div>
+                    </td>
+                    <td style="font-weight:700;color:#e74c3c" th:text="${#numbers.formatInteger(p.price, 1, 'COMMA')} + 'đ'"></td>
+                    <td style="color:#666;font-size:13px" th:text="${p.category_name ?: '—'}"></td>
+                    <td>
+                        <span th:if="${p.quantity == null or p.quantity <= 0}" class="badge badge-danger">Hết hàng</span>
+                        <span th:if="${p.quantity != null and p.quantity > 0 and p.quantity <= 5}" class="badge badge-warning" th:text="${p.quantity + ' còn'}"></span>
+                        <span th:if="${p.quantity != null and p.quantity > 5}" class="badge badge-success" th:text="${p.quantity}"></span>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px">
+                            <a th:href="@{/admin_edit_product.php(id=${p.id})}" class="btn btn-success" style="padding:6px 12px">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a th:href="@{/admin_delete_product.php(id=${p.id})}"
+                               onclick="return confirm('Xóa sản phẩm này?')"
+                               class="btn btn-danger" style="padding:6px 12px">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(products)}">
+                    <td colspan="7" style="text-align:center;color:#aaa;padding:30px">Chưa có sản phẩm nào</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const kw = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#productTable tr').forEach(tr => {
+        tr.style.display = tr.textContent.toLowerCase().includes(kw) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>

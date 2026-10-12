@@ -1,0 +1,12 @@
+target/
+.git/
+.gitignore
+.idea/
+.vscode/
+*.docx
+*.log
+*.png
+*.py
+*.txt
+sland_matches.txt
+test_results.json

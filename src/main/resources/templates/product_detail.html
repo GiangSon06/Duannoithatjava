@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head(${pageTitle})}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<main class="product-detail-page">
+    <th:block th:if="${product != null}">
+        <div class="detail-container">
+            <div class="detail-gallery">
+                <img th:src="${product.image_url}" th:alt="${product.name}" onerror="this.onerror=null;this.src='https://placehold.co/600x600/f7f7f7/aaaaaa?text=No+Image'">
+            </div>
+
+            <div class="detail-info">
+                <h1 th:text="${product.name}">Tên sản phẩm</h1>
+
+                <!-- Tổng quan sao -->
+                <div th:if="${rvTotal > 0}" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                    <div style="display:flex;gap:2px">
+    <span th:each="i : ${#numbers.sequence(1,5)}"
+          th:style="'color:' + (${i le rvAvg} ? '#f1c40f' : '#ddd') + ';font-size:18px;'">★</span>
+                    </div>
+                    <span style="font-weight:700;font-size:15px;color:#1a1f2e" th:text="${rvAvgText}">0</span>
+                    <a href="#reviews-section" style="color:#888;font-size:13px;text-decoration:none" th:text="'(' + ${rvTotal} + ' đánh giá)'">(0 đánh giá)</a>
+                </div>
+
+                <div class="price-box">
+                    Giá: <span class="current-price" th:text="${#numbers.formatDecimal(product.price, 1, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span>
+                </div>
+
+                <div class="short-specs">
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Chất liệu: <strong th:text="${product.material}">-</strong></li>
+                        <li><i class="fas fa-check-circle"></i> Kích thước: <strong th:text="${product.dimensions}">-</strong></li>
+                        <li><i class="fas fa-check-circle"></i> Bảo hành: <strong th:text="${product.warranty}">-</strong></li>
+                    </ul>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:12px;margin:18px 0 22px">
+                    <span style="font-weight:600;font-size:14px;color:#333">Số lượng:</span>
+                    <div style="display:inline-flex;align-items:center;border:1.5px solid #e0e0e0;border-radius:8px;overflow:hidden;background:#fff">
+                        <button type="button" onclick="const q=document.getElementById('detail-qty');if(q&&q.value>1)q.value--" style="width:36px;height:36px;border:none;background:#f8f9fa;cursor:pointer;font-size:16px;font-weight:bold;color:#555;transition:.2s">-</button>
+                        <input id="detail-qty" type="number" value="1" min="1" th:max="${product.quantity}" style="width:50px;height:36px;border:none;text-align:center;font-weight:700;font-size:15px;outline:none" readonly>
+                        <button type="button" onclick="const q=document.getElementById('detail-qty');if(q)q.value++" style="width:36px;height:36px;border:none;background:#f8f9fa;cursor:pointer;font-size:16px;font-weight:bold;color:#555;transition:.2s">+</button>
+                    </div>
+                    <span th:if="${product.quantity != null}" style="font-size:13px;color:#777" th:text="'(Còn ' + ${product.quantity} + ' sản phẩm trong kho)'"></span>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-add-to-cart"
+                            onclick="addToCart(this)"
+                            th:attr="data-id=${product.id},data-name=${product.name},data-price=${product.price},data-img=${product.image_url}">
+                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                    </button>
+
+                    <button class="btn-buy-now"
+                            onclick="buyNow(this)"
+                            th:attr="data-id=${product.id},data-name=${product.name},data-price=${product.price},data-img=${product.image_url}">
+                        Mua ngay
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-description">
+            <h2>Mô tả sản phẩm</h2>
+            <p th:utext="${descriptionHtml}">Mô tả</p>
+        </div>
+    </th:block>
+
+    <h2 th:if="${product == null}" style="text-align: center; padding: 50px;">Sản phẩm bạn tìm không tồn tại.</h2>
+</main>
+
+<!-- ═══════════ SECTION ĐÁNH GIÁ SẢN PHẨM ═══════════ -->
+<section id="reviews-section" th:if="${product != null}" style="max-width:1200px;margin:40px auto;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <div style="width:4px;height:28px;background:linear-gradient(135deg,#bfa15f,#d4b870);border-radius:2px"></div>
+        <h2 style="font-size:22px;font-weight:700;color:#1a1f2e;margin:0">
+            Đánh giá sản phẩm
+            <span th:if="${rvTotal > 0}" style="font-size:15px;color:#888;font-weight:400"
+                  th:text="'(' + ${rvTotal} + ' đánh giá · ⭐ ' + ${rvAvgText} + '/5)'"></span>
+        </h2>
+    </div>
+
+    <!-- TÓM TẮT SAO (chỉ hiện khi có đánh giá) -->
+    <div th:if="${rvTotal > 0}" style="background:#f9f9f9;border-radius:14px;padding:20px 24px;margin-bottom:28px;display:flex;align-items:center;gap:32px;flex-wrap:wrap">
+        <!-- Big score -->
+        <div style="text-align:center;min-width:80px">
+            <div style="font-size:48px;font-weight:800;color:#1a1f2e;line-height:1" th:text="${rvAvgText}">0</div>
+            <div style="display:flex;justify-content:center;gap:2px;margin:6px 0">
+        <span th:each="i : ${#numbers.sequence(1,5)}"
+              th:style="'color:' + (${i le rvAvg} ? '#f1c40f' : '#ddd') + ';font-size:20px'">★</span>
+            </div>
+            <div style="font-size:12px;color:#888" th:text="${rvTotal} + ' đánh giá'">0 đánh giá</div>
+        </div>
+        <!-- Bar chart -->
+        <div style="flex:1;min-width:200px">
+            <div th:each="row : ${starRows}" style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                <span style="font-size:12px;color:#555;width:32px;text-align:right" th:text="${row.star} + '★'">5★</span>
+                <div style="flex:1;height:10px;background:#e0e0e0;border-radius:5px;overflow:hidden">
+                    <div th:style="'width:' + ${row.pct} + '%;height:100%;background:' + ${row.color} + ';border-radius:5px;transition:width .6s'"></div>
+                </div>
+                <span style="font-size:12px;color:#888;width:28px" th:text="${row.count}">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DANH SÁCH ĐÁNH GIÁ -->
+    <div id="reviews-list">
+        <div th:if="${#lists.isEmpty(reviewsFirst)}" id="no-reviews-msg" style="text-align:center;padding:40px;color:#aaa">
+            <div style="font-size:40px;margin-bottom:10px">💬</div>
+            <p>Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+        </div>
+        <div th:each="rv : ${reviewsFirst}" class="review-card" style="border-bottom:1px solid #f0f0f0;padding:18px 0;display:flex;gap:14px">
+            <div style="width:42px;height:42px;background:linear-gradient(135deg,#1a1f2e,#2e5fa3);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;font-weight:700;font-size:15px"
+                 th:text="${#strings.toUpperCase(#strings.substring(rv.username, 0, 1))}">A</div>
+            <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+                    <span style="font-weight:700;font-size:14px;color:#1a1f2e" th:text="${rv.username}">user</span>
+                    <span style="display:flex;gap:1px">
+            <span th:each="i : ${#numbers.sequence(1,5)}"
+                  th:style="'color:' + (${i le rv.rating} ? '#f1c40f' : '#ddd') + ';font-size:14px'">★</span>
+          </span>
+                    <span style="font-size:11px;color:#aaa" th:text="${#dates.format(rv.created_at, 'dd/MM/yyyy')}">01/01/2026</span>
+                </div>
+                <p style="font-size:14px;color:#444;line-height:1.6;margin:0" th:text="${rv.content}">Nội dung</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NÚT XEM THÊM -->
+    <div th:if="${rvHasMore}" style="text-align:center;margin:20px 0">
+        <button id="load-more-reviews"
+                th:attr="data-product=${product.id}"
+                data-offset="4"
+                style="padding:10px 28px;background:white;border:2px solid #1a1f2e;border-radius:25px;font-size:14px;font-weight:600;color:#1a1f2e;cursor:pointer;transition:.2s"
+                onmouseover="this.style.background='#1a1f2e';this.style.color='white'"
+                onmouseout="this.style.background='white';this.style.color='#1a1f2e'"
+                th:text="'Xem thêm đánh giá (còn ' + ${rvRemaining} + ' đánh giá)'">
+            Xem thêm đánh giá
+        </button>
+    </div>
+
+    <!-- FORM GỬI ĐÁNH GIÁ -->
+    <div style="background:#f9f9f9;border-radius:14px;padding:24px;margin-top:32px">
+        <h3 style="font-size:17px;font-weight:700;color:#1a1f2e;margin:0 0 16px">Viết đánh giá của bạn</h3>
+
+        <p th:unless="${loggedIn}" style="color:#888;font-size:14px">Bạn cần <a href="login.php" style="color:#bfa15f;font-weight:600">đăng nhập</a> để đánh giá sản phẩm.</p>
+
+        <th:block th:if="${loggedIn}">
+            <div style="display:flex;gap:6px;margin-bottom:14px" id="star-selector">
+      <span th:each="i : ${#numbers.sequence(1,5)}" th:attr="data-val=${i}"
+            style="font-size:30px;cursor:pointer;color:#ddd;transition:.1s"
+            onclick="selectStar(parseInt(this.dataset.val))"
+            onmouseover="hoverStar(parseInt(this.dataset.val))"
+            onmouseout="resetStarHover()">★</span>
+            </div>
+            <input type="hidden" id="selected-rating" value="5">
+
+            <textarea id="review-content" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."
+                      style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;resize:vertical;box-sizing:border-box;font-family:inherit;outline:none"
+                      onfocus="this.style.borderColor='#bfa15f'" onblur="this.style.borderColor='#e0e0e0'"></textarea>
+
+            <button th:attr="data-pid=${product.id}" onclick="submitReview(this.dataset.pid)"
+                    style="margin-top:12px;padding:10px 28px;background:linear-gradient(135deg,#1a1f2e,#2c3e50);color:white;border:none;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s"
+                    onmouseover="this.style.background='#bfa15f'"
+                    onmouseout="this.style.background='linear-gradient(135deg,#1a1f2e,#2c3e50)'">
+                Gửi đánh giá
+            </button>
+            <span id="review-msg" style="margin-left:14px;font-size:13px"></span>
+        </th:block>
+    </div>
+</section>
+
+<script th:inline="none" th:if="${product != null}">
+    // ── STAR SELECTOR ──
+    let selectedRating = 5;
+    function hoverStar(n) {
+        document.querySelectorAll('#star-selector span').forEach((el,i) => {
+            el.style.color = i < n ? '#f1c40f' : '#ddd';
+        });
+    }
+    function resetStarHover() {
+        document.querySelectorAll('#star-selector span').forEach((el,i) => {
+            el.style.color = i < selectedRating ? '#f1c40f' : '#ddd';
+        });
+    }
+    function selectStar(n) {
+        selectedRating = n;
+        const inp = document.getElementById('selected-rating');
+        if (inp) inp.value = n;
+        resetStarHover();
+    }
+    selectStar(5); // mặc định 5 sao
+
+    // ── GỬI ĐÁNH GIÁ ──
+    function submitReview(productId) {
+        const content = document.getElementById('review-content').value.trim();
+        const rating  = parseInt(document.getElementById('selected-rating').value);
+        const msgEl   = document.getElementById('review-msg');
+        if (!content) { msgEl.style.color='#e74c3c'; msgEl.textContent='Vui lòng nhập nội dung.'; return; }
+        msgEl.style.color='#888'; msgEl.textContent='Đang gửi...';
+
+        fetch('process_review.php', {
+            method: 'POST',
+            headers: {'Content-Type':'application/x-www-form-urlencoded'},
+            body: `product_id=${productId}&rating=${rating}&content=${encodeURIComponent(content)}`
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    msgEl.style.color='#27ae60'; msgEl.textContent='✓ ' + data.message;
+                    document.getElementById('review-content').value = '';
+                    const noMsg = document.getElementById('no-reviews-msg');
+                    if (noMsg) noMsg.remove();
+                    // Render review mới lên đầu danh sách
+                    const rv = data.review;
+                    const stars = Array.from({length:5},(_,i)=>`<span style="color:${i<rv.rating?'#f1c40f':'#ddd'};font-size:14px">★</span>`).join('');
+                    const initial = rv.username.charAt(0).toUpperCase();
+                    const html = `
+        <div class="review-card" style="border-bottom:1px solid #f0f0f0;padding:18px 0;display:flex;gap:14px">
+          <div style="width:42px;height:42px;background:linear-gradient(135deg,#1a1f2e,#2e5fa3);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;font-weight:700;font-size:15px">${initial}</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+              <span style="font-weight:700;font-size:14px;color:#1a1f2e">${rv.username}</span>
+              <span style="display:flex;gap:1px">${stars}</span>
+              <span style="font-size:11px;color:#aaa">${rv.created_at}</span>
+            </div>
+            <p style="font-size:14px;color:#444;line-height:1.6;margin:0">${rv.content}</p>
+          </div>
+        </div>`;
+                    document.getElementById('reviews-list').insertAdjacentHTML('afterbegin', html);
+                } else {
+                    msgEl.style.color='#e74c3c'; msgEl.textContent='✗ ' + data.message;
+                }
+            })
+            .catch(() => { msgEl.style.color='#e74c3c'; msgEl.textContent='Lỗi kết nối.'; });
+    }
+
+    // ── XEM THÊM ĐÁNH GIÁ (AJAX) ──
+    const loadMoreBtn = document.getElementById('load-more-reviews');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            const offset  = parseInt(this.dataset.offset);
+            const pid     = this.dataset.product;
+            this.textContent = 'Đang tải...';
+            this.disabled = true;
+
+            fetch(`get_reviews.php?product_id=${pid}&offset=${offset}&limit=4`)
+                .then(r => r.json())
+                .then(data => {
+                    data.reviews.forEach(rv => {
+                        const stars = Array.from({length:5},(_,i)=>`<span style="color:${i<rv.rating?'#f1c40f':'#ddd'};font-size:14px">★</span>`).join('');
+                        const initial = rv.username.charAt(0).toUpperCase();
+                        const html = `
+            <div class="review-card" style="border-bottom:1px solid #f0f0f0;padding:18px 0;display:flex;gap:14px">
+              <div style="width:42px;height:42px;background:linear-gradient(135deg,#1a1f2e,#2e5fa3);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;font-weight:700;font-size:15px">${initial}</div>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+                  <span style="font-weight:700;font-size:14px;color:#1a1f2e">${rv.username}</span>
+                  <span style="display:flex;gap:1px">${stars}</span>
+                  <span style="font-size:11px;color:#aaa">${rv.created_at}</span>
+                </div>
+                <p style="font-size:14px;color:#444;line-height:1.6;margin:0">${rv.content}</p>
+              </div>
+            </div>`;
+                        document.getElementById('reviews-list').insertAdjacentHTML('beforeend', html);
+                    });
+
+                    const newOffset = offset + data.reviews.length;
+                    if (data.has_more) {
+                        loadMoreBtn.dataset.offset = newOffset;
+                        loadMoreBtn.textContent = `Xem thêm đánh giá (còn ${data.remaining} đánh giá)`;
+                        loadMoreBtn.disabled = false;
+                    } else {
+                        loadMoreBtn.parentElement.remove();
+                    }
+                })
+                .catch(() => { loadMoreBtn.textContent='Lỗi tải'; loadMoreBtn.disabled=false; });
+        });
+    }
+</script>
+
+<!-- SẢN PHẨM LIÊN QUAN -->
+<section th:if="${product != null and !#lists.isEmpty(related)}" style="max-width:1200px;margin:50px auto;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:25px">
+        <div style="width:4px;height:28px;background:linear-gradient(135deg,#bfa15f,#d4b870);border-radius:2px"></div>
+        <h2 style="font-size:22px;font-weight:700;color:#1a1f2e;margin:0">Sản phẩm liên quan</h2>
+        <a th:href="@{/products.php(cate=${product.category_id})}" style="margin-left:auto;color:#bfa15f;text-decoration:none;font-size:13px;font-weight:600">Xem tất cả →</a>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+        <div th:each="rel : ${related}" class="product-card"
+             th:attr="data-id=${rel.id},data-name=${rel.name},data-price=${rel.price}"
+             style="background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);transition:all 0.3s;position:relative">
+
+            <div th:if="${rel.old_price != null and rel.old_price > rel.price}"
+                 style="position:absolute;top:10px;left:10px;background:#e74c3c;color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;z-index:2"
+                 th:text="'-' + ${#numbers.formatDecimal((rel.old_price - rel.price) * 100.0 / rel.old_price, 0, 0)} + '%'">-10%</div>
+
+            <a th:href="@{/product_detail.php(id=${rel.id})}" style="display:block;overflow:hidden">
+                <img th:src="${rel.image_url}" th:alt="${rel.name}"
+                     style="width:100%;height:200px;object-fit:cover;transition:transform 0.4s"
+                     onmouseover="this.style.transform='scale(1.05)'"
+                     onmouseout="this.style.transform='scale(1)'"
+                     onerror="this.onerror=null;this.src='picture/no-image.svg'">
+            </a>
+
+            <div style="padding:14px">
+                <a th:href="@{/product_detail.php(id=${rel.id})}" style="text-decoration:none">
+                    <h3 style="font-size:14px;font-weight:600;color:#1a1f2e;margin:0 0 8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" th:text="${rel.name}">Tên</h3>
+                </a>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                    <span style="font-size:16px;font-weight:700;color:#e74c3c" th:text="${#numbers.formatDecimal(rel.price, 1, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span>
+                    <span th:if="${rel.old_price != null and rel.old_price > 0}"
+                          style="font-size:12px;color:#aaa;text-decoration:line-through"
+                          th:text="${#numbers.formatDecimal(rel.old_price, 1, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button onclick="addToCart(this)"
+                            th:attr="data-id=${rel.id},data-name=${rel.name},data-price=${rel.price},data-img=${rel.image_url}"
+                            style="flex:1;padding:8px;background:#2c3e50;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:0.2s"
+                            onmouseover="this.style.background='#bfa15f'"
+                            onmouseout="this.style.background='#2c3e50'">
+                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                    <a th:href="@{/product_detail.php(id=${rel.id})}"
+                       style="padding:8px 12px;background:#f5f5f5;color:#555;border-radius:8px;text-decoration:none;font-size:12px;display:flex;align-items:center;transition:0.2s"
+                       onmouseover="this.style.background='#eee'"
+                       onmouseout="this.style.background='#f5f5f5'">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

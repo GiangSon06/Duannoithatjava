@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head('Xác minh Email')}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<style>
+.auth-wrap { min-height:80vh; display:flex; align-items:center; justify-content:center; padding:30px 16px; }
+.auth-card { background:white; border-radius:20px; padding:50px 40px; box-shadow:0 8px 48px rgba(0,0,0,0.1); width:100%; max-width:420px; text-align:center; }
+.verify-icon { font-size:72px; margin-bottom:20px; animation:popIn .6s cubic-bezier(.34,1.56,.64,1); }
+@keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.auth-title { font-size:24px; font-weight:800; color:#1a1f2e; margin-bottom:10px; }
+.auth-msg   { font-size:14px; color:#777; line-height:1.7; margin-bottom:28px; }
+.btn-primary {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 32px; background:linear-gradient(135deg,#bfa15f,#d4b870);
+    color:white; border-radius:30px; text-decoration:none;
+    font-size:15px; font-weight:700; transition:.2s;
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(191,161,95,.4); }
+.msg-success { background:#d1e7dd; color:#0a3622; border:1px solid #a3cfbb; border-radius:8px; padding:12px 14px; margin-bottom:20px; font-size:14px; }
+.msg-error   { background:#fdf2f2; color:#c0392b; border:1px solid #f5c6c6; border-radius:8px; padding:12px 14px; margin-bottom:20px; font-size:14px; }
+</style>
+
+<div class="auth-wrap">
+    <div class="auth-card">
+        <!-- Icon thay đổi tuỳ kết quả -->
+        <div class="verify-icon" th:text="${message != null and message.contains('thành công') ? '✅' : (message != null and message.contains('hết hạn') ? '⏰' : '📧')}">📧</div>
+
+        <div class="auth-title" th:text="${message != null and message.contains('thành công') ? 'Xác minh thành công!' : 'Xác minh Email'}">Xác minh Email</div>
+
+        <div class="msg-success" th:if="${message != null and message.contains('thành công')}" th:text="${message}"></div>
+        <div class="msg-error"   th:if="${message != null and !message.contains('thành công')}" th:text="${message}"></div>
+
+        <div class="auth-msg" th:if="${message == null}">
+            Vui lòng kiểm tra hộp thư email của bạn và nhấp vào link xác minh chúng tôi đã gửi.
+        </div>
+
+        <a href="/login.php" class="btn-primary">
+            <i class="fas fa-sign-in-alt"></i> Đăng nhập ngay
+        </a>
+    </div>
+</div>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

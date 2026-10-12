@@ -1,0 +1,102 @@
+{
+  "TC01": {
+    "status": "Đạt",
+    "note": "Hệ thống từ chối mật khẩu yếu thiếu chữ hoa."
+  },
+  "TC02": {
+    "status": "Đạt",
+    "note": "Từ chối đăng ký do tên đăng nhập/email đã tồn tại."
+  },
+  "TC03": {
+    "status": "Đạt",
+    "note": "Từ chối đăng nhập khi chưa xác minh email."
+  },
+  "TC04": {
+    "status": "Đạt",
+    "note": "Response: {'status': 'success', 'stock': 50}"
+  },
+  "TC05": {
+    "status": "Đạt",
+    "note": "Bị từ chối kèm số tồn còn lại: Xin lỗi, số lượng tồn kho chỉ còn 86 sản phẩm."
+  },
+  "TC06": {
+    "status": "Đạt",
+    "note": "discount = 450.000 đ; final = 4.050.000 đ."
+  },
+  "TC07": {
+    "status": "Đạt",
+    "note": "Báo lỗi: Đơn hàng chưa đạt mức tối thiểu để dùng voucher."
+  },
+  "TC08": {
+    "status": "Đạt",
+    "note": "discount = 100.000 đ; final = 1.100.000 đ."
+  },
+  "TC09": {
+    "status": "Đạt",
+    "note": "discount bị chặn bằng giá trị đơn 1.000.000 đ; final = 0 đ."
+  },
+  "TC10": {
+    "status": "Đạt",
+    "note": "Lỗi: Mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa!"
+  },
+  "TC11": {
+    "status": "Đạt",
+    "note": "Đơn tạo trạng thái 'Chờ xử lý', trừ tồn kho chính xác, ghi log order_status_history, ngày giao dự kiến sau 2 ngày làm việc."
+  },
+  "TC12": {
+    "status": "Đạt",
+    "note": "Tự động trích xuất tỉnh thành; tính theo khoảng cách km, cộng từ 5–8 ngày làm việc (bỏ qua T7, CN)."
+  },
+  "TC13": {
+    "status": "Đạt",
+    "note": "Chặn đơn hàng rỗng."
+  },
+  "TC14": {
+    "status": "Đạt",
+    "note": "Transaction và SELECT FOR UPDATE khóa dòng sản phẩm; 1 đơn thành công, đơn thứ hai nhận lỗi hết hàng, tồn không bị âm."
+  },
+  "TC15": {
+    "status": "Đạt",
+    "note": "Nhờ @Transactional, lỗi tại một sản phẩm rollback toàn bộ đơn hàng; không tạo order rác, tồn kho bảo toàn."
+  },
+  "TC16": {
+    "status": "Đạt",
+    "note": "Đơn chuyển sang 'Đã hủy', số lượng sản phẩm được cộng lại vào kho, hoa hồng pending chuyển sang 'cancelled'."
+  },
+  "TC17": {
+    "status": "Đạt",
+    "note": "Bị từ chối: 'Không thể hủy đơn ở trạng thái hiện tại.'."
+  },
+  "TC18": {
+    "status": "Đạt",
+    "note": "StorageService kiểm tra MIME type; ném ngoại lệ từ chối tệp không thuộc JPG, PNG, WEBP, GIF."
+  },
+  "TC19": {
+    "status": "Đạt",
+    "note": "Chuyển hướng (302) về /login.php."
+  },
+  "TC20": {
+    "status": "Đạt",
+    "note": "Câu lệnh SQL ràng buộc WHERE role<>'admin', tài khoản admin không bị đổi cờ is_locked."
+  },
+  "TC21": {
+    "status": "Đạt",
+    "note": "Trạng thái đơn chuyển sang 'Đã giao hàng' kích hoạt cập nhật hoa hồng thành 'confirmed' và cộng số dư CTV."
+  },
+  "TC22": {
+    "status": "Đạt",
+    "note": "Bị từ chối: kiểm tra tối thiểu 50.000 đ và kiểm tra số dư khả dụng."
+  },
+  "TC23": {
+    "status": "Đạt",
+    "note": "MomoService bắt trường hợp thiếu MOMO_ACCESS_KEY/MOMO_SECRET_KEY, hiển thị thông báo thay vì sập hệ thống."
+  },
+  "TC24": {
+    "status": "Đạt",
+    "note": "Callback trả về /momo_return.php, xác minh chữ ký HMAC-SHA256, ghi nhận thanh toán momo."
+  },
+  "TC25": {
+    "status": "Không đạt",
+    "note": "{'timestamp': '2026-10-06T07:09:10.697+00:00', 'status': 404, 'error': 'Not Found', 'message': 'No static resource api_chat.php.', 'path': '/api_chat.php'}"
+  }
+}

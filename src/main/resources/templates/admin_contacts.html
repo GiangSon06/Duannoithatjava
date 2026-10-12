@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Liên hệ khách hàng — GS LUXURY Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <div class="admin-page-title"><i class="fas fa-envelope"></i> Liên hệ khách hàng
+        <span style="font-size:13px;color:#aaa;font-weight:400;margin-left:6px" th:text="'(' + ${#lists.size(contacts)} + ' tin nhắn)'"></span>
+    </div>
+
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button onclick="filterStatus('all')" id="tab-all" class="tab-btn active-tab">Tất cả</button>
+        <button onclick="filterStatus('new')" id="tab-new" class="tab-btn">🔴 Mới</button>
+        <button onclick="filterStatus('read')" id="tab-read" class="tab-btn">📖 Đã đọc</button>
+        <button onclick="filterStatus('done')" id="tab-done" class="tab-btn">✅ Đã xử lý</button>
+    </div>
+
+    <style>
+    .tab-btn { padding:8px 16px; border:1.5px solid #e0e4ea; border-radius:20px; background:white; cursor:pointer; font-size:13px; font-weight:600; color:#666; transition:.18s; }
+    .tab-btn:hover { border-color:#bfa15f; color:#bfa15f; }
+    .active-tab { background:linear-gradient(135deg,#bfa15f,#d4b870); color:white!important; border-color:#bfa15f!important; }
+    </style>
+
+    <div class="admin-card" style="padding:0;overflow:hidden">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Khách hàng</th>
+                    <th>SĐT</th>
+                    <th>Nội dung</th>
+                    <th>Ngày gửi</th>
+                    <th>Trạng thái</th>
+                    <th>Cập nhật</th>
+                </tr>
+            </thead>
+            <tbody id="contactTable">
+                <tr th:each="c : ${contacts}" th:attr="data-status=${c.status}">
+                    <td>
+                        <div style="font-weight:600;color:#1a1f2e" th:text="${c.full_name}"></div>
+                        <div style="font-size:11px;color:#aaa" th:text="${c.email ?: ''}"></div>
+                    </td>
+                    <td style="font-size:13px;color:#555" th:text="${c.phone}"></td>
+                    <td style="max-width:320px">
+                        <div style="font-size:13px;color:#555;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical"
+                             th:text="${c.message}"></div>
+                    </td>
+                    <td style="font-size:12px;color:#aaa;white-space:nowrap"
+                        th:text="${c.created_at != null ? #dates.format(c.created_at, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${c.status == 'done'} ? 'badge-success' : (${c.status == 'new'} ? 'badge-danger' : 'badge-secondary')"
+                              th:text="${c.status == 'new' ? '🔴 Mới' : (c.status == 'read' ? '📖 Đã đọc' : '✅ Đã xử lý')}"></span>
+                    </td>
+                    <td>
+                        <form method="post" action="/admin_contacts.php" style="display:flex;gap:6px">
+                            <input type="hidden" name="id" th:value="${c.id}">
+                            <select name="status" class="form-control" style="font-size:12px;padding:5px 8px">
+                                <option value="new" th:selected="${c.status == 'new'}">Mới</option>
+                                <option value="read" th:selected="${c.status == 'read'}">Đã đọc</option>
+                                <option value="done" th:selected="${c.status == 'done'}">Đã xử lý</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary" style="font-size:12px;padding:5px 10px">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(contacts)}">
+                    <td colspan="6" style="text-align:center;color:#aaa;padding:30px">Chưa có liên hệ nào</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterStatus(status) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+    document.getElementById('tab-' + status).classList.add('active-tab');
+    document.querySelectorAll('#contactTable tr[data-status]').forEach(tr => {
+        tr.style.display = (status === 'all' || tr.dataset.status === status) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

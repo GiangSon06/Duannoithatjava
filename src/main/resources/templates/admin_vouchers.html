@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Quản lý Voucher — GS LUXURY Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <!-- Alerts from redirect -->
+    <div th:if="${param.added != null}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i> Thêm voucher thành công!
+    </div>
+    <div th:if="${param.deleted != null}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i> Đã xóa voucher!
+    </div>
+
+    <!-- Form validation errors -->
+    <div th:if="${not #lists.isEmpty(errors)}" class="alert alert-danger">
+        <div th:each="err : ${errors}" th:text="${err}"></div>
+    </div>
+    <div th:if="${param.deleted != null}" style="background:#eafaf1;color:#27ae60;border:1px solid #a3e4d7;padding:12px 18px;border-radius:8px;margin-bottom:16px;font-size:13px;font-weight:600">
+        <i class="fas fa-check-circle"></i> Đã xóa voucher thành công!
+    </div>
+    <div th:if="${param.added != null}" style="background:#eafaf1;color:#27ae60;border:1px solid #a3e4d7;padding:12px 18px;border-radius:8px;margin-bottom:16px;font-size:13px;font-weight:600">
+        <i class="fas fa-check-circle"></i> Đã thêm voucher mới thành công!
+    </div>
+
+    <div class="admin-page-title"><i class="fas fa-ticket-alt"></i> Quản lý Voucher</div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;align-items:start">
+        <!-- DANH SÁCH VOUCHER -->
+        <div class="admin-card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-ticket-alt"></i> Danh sách voucher</div>
+            </div>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Loại giảm giá</th>
+                        <th>Giá trị</th>
+                        <th>Đơn tối thiểu</th>
+                        <th>Đã dùng</th>
+                        <th>Hạn dùng</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="v : ${vouchers}">
+                        <td>
+                            <strong style="font-size:14px;color:#bfa15f;letter-spacing:1px" th:text="${v.code}"></strong>
+                        </td>
+                        <td style="font-size:12px"
+                            th:text="${v.discount_type == 'percent' ? 'Phần trăm' : 'Cố định'}"></td>
+                        <td style="font-weight:700;color:#e74c3c"
+                            th:text="${v.discount_type == 'percent' ? (v.discount_value + '%') : (#numbers.formatInteger(v.discount_value, 1, 'COMMA') + 'đ')}"></td>
+                        <td style="font-size:12px;color:#666"
+                            th:text="${v.min_order > 0 ? (#numbers.formatInteger(v.min_order, 1, 'COMMA') + 'đ') : 'Không giới hạn'}"></td>
+                        <td style="font-size:12px;color:#666"
+                            th:text="${(v.used_count ?: 0) + '/' + v.max_uses}"></td>
+                        <td style="font-size:12px;color:#aaa"
+                            th:text="${v.expires_at != null ? #dates.format(v.expires_at, 'dd/MM/yyyy') : 'Không giới hạn'}"></td>
+                        <td>
+                            <span th:if="${v.is_active == 1}" style="background:#eafaf1;color:#27ae60;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">Hoạt động</span>
+                            <span th:unless="${v.is_active == 1}" style="background:#f5f5f5;color:#aaa;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">Tắt</span>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:5px">
+                                <a th:href="@{admin_vouchers.php(toggle=${v.id})}"
+                                   class="btn"
+                                   th:classappend="${v.is_active == 1} ? 'btn-secondary' : 'btn-success'"
+                                   style="padding:5px 9px;font-size:11px"
+                                   th:title="${v.is_active == 1 ? 'Tắt' : 'Bật'}">
+                                    <i th:if="${v.is_active == 1}" class="fas fa-pause"></i>
+                                    <i th:unless="${v.is_active == 1}" class="fas fa-play"></i>
+                                </a>
+                                <a th:href="@{admin_vouchers.php(delete=${v.id})}"
+                                   class="btn btn-danger"
+                                   style="padding:5px 9px;font-size:11px"
+                                   onclick="return confirm('Xóa voucher ' + this.closest('tr').querySelector('strong').textContent + '?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(vouchers)}">
+                        <td colspan="8" style="text-align:center;color:#aaa;padding:30px">Chưa có voucher nào</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FORM THÊM VOUCHER -->
+        <div class="admin-card">
+            <div class="card-title" style="margin-bottom:16px"><i class="fas fa-plus-circle"></i> Tạo voucher mới</div>
+            <form method="post" action="/admin_vouchers.php">
+                <input type="hidden" name="action" value="add">
+                <div style="margin-bottom:12px">
+                    <label class="form-label">Mã voucher <span style="color:red">*</span></label>
+                    <input name="code" class="form-control" style="width:100%;box-sizing:border-box;text-transform:uppercase"
+                           placeholder="VD: SALE20"
+                           th:value="${oldCode != null ? oldCode : ''}" required>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label class="form-label">Loại giảm giá *</label>
+                    <select name="discount_type" class="form-control" style="width:100%;box-sizing:border-box" onchange="toggleType(this.value)">
+                        <option value="percent" th:selected="${oldType == 'percent' or (oldType == null and 'percent' == 'percent')}">Phần trăm (%)</option>
+                        <option value="fixed" th:selected="${oldType == 'fixed' or (oldType == null and 'fixed' == 'fixed')}">Số tiền cố định (đ)</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label class="form-label">Giá trị giảm <span id="type_hint" style="color:#bfa15f">(%)</span> *</label>
+                    <input name="discount_value" type="number" step="0.01" min="0" class="form-control" style="width:100%;box-sizing:border-box"
+                           placeholder="VD: 15"
+                           th:value="${oldValue != null ? oldValue : ''}" required>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label class="form-label">Đơn hàng tối thiểu (đ)</label>
+                    <input name="min_order" class="form-control" style="width:100%;box-sizing:border-box"
+                           placeholder="0 = không giới hạn" min="0"
+                           th:value="${oldMin != null ? oldMin : ''}" required>
+                </div>
+                <div style="margin-bottom:12px">
+                    <label class="form-label">Số lần dùng tối đa</label>
+                    <input name="max_uses" class="form-control" style="width:100%;box-sizing:border-box"
+                           placeholder="100" min="1"
+                           th:value="${oldMax != null ? oldMax : ''}" required>
+                </div>
+                <div style="margin-bottom:16px">
+                    <label class="form-label">Hạn dùng (để trống = không hạn)</label>
+                    <input name="expires_at" class="form-control" style="width:100%;box-sizing:border-box" type="date"
+                           th:value="${oldExpires != null ? oldExpires : ''}">
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Tạo voucher
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleType(v) {
+    document.getElementById('type_hint').textContent = v==='percent' ? '(%)' : '(đ)';
+}
+</script>
+
+</body>
+</html>

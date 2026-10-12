@@ -1,0 +1,18 @@
+package vn.sland.controller;
+
+import jakarta.servlet.http.*;import org.springframework.stereotype.Controller;import org.springframework.ui.Model;import org.springframework.web.bind.annotation.*;import vn.sland.service.AuthService;import vn.sland.util.WebUtil;import java.util.*;
+
+@Controller
+public class AuthController extends BaseController {
+    private final AuthService auth;public AuthController(AuthService auth){this.auth=auth;}
+    @GetMapping("/login.php")String login(Model m,HttpSession s){base(m,s,"Đăng nhập");return "login";}
+    @PostMapping("/login.php")String loginPost(Model m,HttpSession s,@RequestParam String username,@RequestParam String password){Map<String,Object>u=auth.authenticate(username.trim(),password);if(u==null){base(m,s,"Đăng nhập");m.addAttribute("error","Tên đăng nhập/Email hoặc mật khẩu không đúng.");return "login";}if(u.containsKey("error")){base(m,s,"Đăng nhập");m.addAttribute("error",u.get("error"));return "login";}s.setAttribute("user_id",u.get("id"));s.setAttribute("username",u.get("username"));s.setAttribute("role",u.get("role"));return "redirect:"+("admin".equals(u.get("role"))?"/admin.php":"/index.php");}
+    @GetMapping("/logout.php")String logout(HttpSession s){s.invalidate();return "redirect:/index.php";}
+    @GetMapping("/register.php")String register(@RequestParam(required=false)String ref,Model m,HttpSession s){if(ref!=null&&!WebUtil.cleanRef(ref).isBlank())s.setAttribute("aff_ref",WebUtil.cleanRef(ref));base(m,s,"Đăng ký tài khoản");return "register";}
+    @PostMapping("/register.php")String registerPost(Model m,HttpSession s,@RequestParam String username,@RequestParam String email,@RequestParam String password,@RequestParam(name="confirm_password")String confirm){String err=auth.validateRegistration(username.trim(),email.trim(),password,confirm);if(err!=null){base(m,s,"Đăng ký tài khoản");m.addAttribute("error",err);m.addAttribute("oldUsername",username);m.addAttribute("oldEmail",email);return "register";}auth.register(username.trim(),email.trim(),password,String.valueOf(s.getAttribute("aff_ref")));s.removeAttribute("aff_ref");base(m,s,"Đăng ký tài khoản");m.addAttribute("success","Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản.");return "register";}
+    @GetMapping("/verify_email.php")String verify(@RequestParam long uid,@RequestParam String token,Model m,HttpSession s){base(m,s,"Xác minh email");m.addAttribute("message",auth.verify(uid,token));return "verify_email";}
+    @GetMapping("/quenmatkhau.php")String forgot(Model m,HttpSession s){base(m,s,"Quên mật khẩu");return "forgot_password";}
+    @PostMapping("/quenmatkhau.php")String forgotPost(@RequestParam String email,Model m,HttpSession s){base(m,s,"Quên mật khẩu");auth.requestReset(email.trim());m.addAttribute("message","Nếu email tồn tại, hệ thống đã gửi liên kết đặt lại mật khẩu.");return "forgot_password";}
+    @GetMapping("/datlaimatkhau.php")String reset(@RequestParam String token,Model m,HttpSession s){base(m,s,"Đặt lại mật khẩu");m.addAttribute("token",token);m.addAttribute("valid",auth.validResetToken(token));return "reset_password";}
+    @PostMapping("/datlaimatkhau.php")String resetPost(@RequestParam String token,@RequestParam String password,@RequestParam(name="confirm_password")String confirm,Model m,HttpSession s){base(m,s,"Đặt lại mật khẩu");String err=auth.resetPassword(token,password,confirm);m.addAttribute("token",token);m.addAttribute("valid",err!=null);if(err==null)m.addAttribute("success","Đổi mật khẩu thành công. Bạn có thể đăng nhập.");else m.addAttribute("error",err);return "reset_password";}
+}

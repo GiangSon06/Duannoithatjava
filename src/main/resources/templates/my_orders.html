@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head('Đơn hàng của tôi')}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<style>
+.my-orders-wrap { max-width:900px; margin:35px auto; padding:0 18px; }
+.my-orders-wrap h1 { font-size:22px; font-weight:700; color:#1a1f2e; margin-bottom:22px; }
+
+.order-card {
+    background:white; border:1px solid #eee; border-radius:12px;
+    padding:20px; margin-bottom:14px;
+    transition:box-shadow .2s, transform .2s;
+}
+.order-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.09); transform:translateY(-2px); }
+
+.order-card-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.order-id { font-size:16px; font-weight:700; color:#1a1f2e; }
+.order-date { font-size:13px; color:#aaa; margin-top:2px; }
+
+.status-badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700; }
+.status-cho   { background:#fff3cd; color:#856404; }
+.status-chuan { background:#d1ecf1; color:#0c5460; }
+.status-dang  { background:#cff4fc; color:#055160; }
+.status-giao  { background:#d1e7dd; color:#0a3622; }
+.status-huy   { background:#f8d7da; color:#842029; }
+
+.order-card-bottom { display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:14px; border-top:1px solid #f5f5f5; flex-wrap:wrap; gap:10px; }
+.order-total { font-size:16px; font-weight:700; color:#e74c3c; }
+.order-total-label { font-size:12px; color:#888; margin-bottom:2px; }
+
+.btn-detail { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:#2c3e50; color:white; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; transition:.2s; }
+.btn-detail:hover { background:#bfa15f; }
+
+.empty-orders { text-align:center; padding:60px 20px; }
+.empty-orders i { font-size:64px; color:#eee; margin-bottom:20px; display:block; }
+.empty-orders p { font-size:16px; color:#aaa; margin-bottom:20px; }
+.btn-shop { display:inline-block; padding:12px 28px; background:#bfa15f; color:white; border-radius:30px; text-decoration:none; font-weight:700; transition:.2s; }
+.btn-shop:hover { background:#a8894e; }
+</style>
+
+<div class="my-orders-wrap">
+    <h1><i class="fas fa-box" style="color:#bfa15f;margin-right:8px;"></i>Đơn hàng của tôi</h1>
+
+    <!-- Empty state -->
+    <div th:if="${#lists.isEmpty(orders)}" class="empty-orders">
+        <i class="fas fa-shopping-bag"></i>
+        <p>Bạn chưa có đơn hàng nào.</p>
+        <a href="/products.php" class="btn-shop">🛍️ Mua sắm ngay</a>
+    </div>
+
+    <!-- Order list -->
+    <div th:each="o : ${orders}" class="order-card">
+        <div class="order-card-top">
+            <div>
+                <div class="order-id" th:text="'Đơn hàng #' + ${o.id}"></div>
+                <div class="order-date" th:text="'Ngày đặt: ' + ${o.created_at}"></div>
+            </div>
+            <span th:with="st=${o.status}"
+                  th:class="${st=='Chờ xử lý'?'status-badge status-cho':
+                              st=='Đang chuẩn bị'?'status-badge status-chuan':
+                              st=='Đang giao'?'status-badge status-dang':
+                              (st=='Đã giao hàng' or st=='Đã giao')?'status-badge status-giao':'status-badge status-huy'}"
+                  th:text="${st}">Trạng thái</span>
+        </div>
+
+        <!-- Địa chỉ rút gọn -->
+        <div style="font-size:13px;color:#777;margin-top:8px;" th:if="${o.address}">
+            <i class="fas fa-map-marker-alt" style="color:#bfa15f;margin-right:4px;"></i>
+            <span th:text="${o.address}"></span>
+        </div>
+
+        <div class="order-card-bottom">
+            <div>
+                <div class="order-total-label">Tổng tiền</div>
+                <div class="order-total"
+                     th:text="${#numbers.formatInteger(o.total_money, 1, 'COMMA')} + 'đ'">0đ</div>
+            </div>
+            <a th:href="@{/order_detail.php(id=${o.id})}" class="btn-detail">
+                <i class="fas fa-eye"></i> Xem chi tiết
+            </a>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head('Đăng ký tài khoản')}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<style>
+.auth-container {
+    min-height:80vh; display:flex; align-items:center; justify-content:center;
+    padding:30px 16px;
+}
+.auth-box {
+    background:white; border-radius:18px; padding:40px 36px;
+    box-shadow:0 8px 40px rgba(0,0,0,0.09); width:100%; max-width:440px;
+}
+.auth-box h2 {
+    font-size:24px; font-weight:800; color:#1a1f2e;
+    text-align:center; margin-bottom:28px;
+}
+.auth-box h2 span { color:#bfa15f; }
+
+.input-group { margin-bottom:18px; }
+.input-group label { display:block; font-size:13px; font-weight:600; color:#555; margin-bottom:6px; }
+.input-group input {
+    width:100%; padding:11px 14px; border:1.5px solid #e8e8e8; border-radius:9px;
+    font-size:14px; font-family:inherit; transition:border-color .2s; box-sizing:border-box;
+}
+.input-group input:focus  { outline:none; border-color:#bfa15f; }
+.input-group input.ok     { border-color:#27ae60; }
+.input-group input.error  { border-color:#e74c3c; }
+.field-hint { font-size:11px; margin-top:4px; display:none; }
+.field-hint.show { display:block; }
+.field-hint.ok    { color:#27ae60; }
+.field-hint.error { color:#e74c3c; }
+
+.input-eye-wrap { position:relative; }
+.toggle-eye { position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#aaa; font-size:14px; user-select:none; }
+.toggle-eye:hover { color:#555; }
+
+/* Password strength */
+.pw-strength-bar { height:5px; background:#eee; border-radius:3px; margin-top:6px; overflow:hidden; }
+.pw-strength-fill { height:100%; border-radius:3px; width:0; transition:width .3s,background .3s; }
+.pw-strength-text { font-size:11px; margin-top:3px; color:#aaa; }
+
+.btn-register {
+    width:100%; padding:13px; background:linear-gradient(135deg,#bfa15f,#d4b870);
+    color:white; border:none; border-radius:10px; font-size:15px; font-weight:700;
+    cursor:pointer; transition:.2s; margin-top:4px; letter-spacing:.5px;
+}
+.btn-register:hover { transform:translateY(-1px); box-shadow:0 5px 20px rgba(191,161,95,.4); }
+.btn-register:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+.msg-success { background:#d1e7dd; color:#0a3622; border:1px solid #a3cfbb; border-radius:8px; padding:12px 14px; margin-bottom:18px; font-size:14px; }
+.msg-error   { background:#f8d7da; color:#842029; border:1px solid #f5c2c7; border-radius:8px; padding:12px 14px; margin-bottom:18px; font-size:14px; }
+
+.auth-footer { text-align:center; margin-top:20px; font-size:14px; color:#888; }
+.auth-footer a { color:#bfa15f; font-weight:700; text-decoration:none; }
+.auth-footer a:hover { text-decoration:underline; }
+
+.divider { display:flex; align-items:center; gap:10px; margin:20px 0; }
+.divider::before,.divider::after { content:''; flex:1; height:1px; background:#eee; }
+.divider span { font-size:12px; color:#aaa; white-space:nowrap; }
+</style>
+
+<div class="auth-container">
+    <div class="auth-box">
+        <h2>Đăng Ký <span>Thành Viên</span></h2>
+
+        <div class="msg-success" th:if="${success}" th:text="${success}"></div>
+        <div class="msg-error"   th:if="${error}"   th:text="${error}"></div>
+
+        <form method="post" action="/register.php" id="registerForm" novalidate>
+
+            <!-- Tên đăng nhập -->
+            <div class="input-group">
+                <label for="reg_username">Tên đăng nhập *</label>
+                <input type="text" id="reg_username" name="username" autocomplete="username"
+                       th:value="${oldUsername}" placeholder="Tên đăng nhập hoặc Email (3–50 ký tự)"
+                       oninput="validateUsername(this)" required>
+                <div id="hint_username" class="field-hint"></div>
+            </div>
+
+            <!-- Email -->
+            <div class="input-group">
+                <label for="reg_email">Email *</label>
+                <input type="email" id="reg_email" name="email" autocomplete="email"
+                       th:value="${oldEmail}" placeholder="example@email.com"
+                       oninput="validateEmail(this)" required>
+                <div id="hint_email" class="field-hint"></div>
+            </div>
+
+            <!-- Mật khẩu -->
+            <div class="input-group">
+                <label for="reg_password">Mật khẩu *</label>
+                <div class="input-eye-wrap">
+                    <input type="password" id="reg_password" name="password" autocomplete="new-password"
+                           placeholder="Tối thiểu 6 ký tự"
+                           oninput="validatePassword(this)" required>
+                    <span class="toggle-eye" onclick="toggleEye('reg_password',this)">
+                        <i class="fas fa-eye-slash"></i>
+                    </span>
+                </div>
+                <div class="pw-strength-bar"><div id="pw_fill" class="pw-strength-fill"></div></div>
+                <div id="pw_strength_text" class="pw-strength-text"></div>
+                <div id="hint_password" class="field-hint"></div>
+            </div>
+
+            <!-- Nhập lại mật khẩu -->
+            <div class="input-group">
+                <label for="reg_confirm">Nhập lại mật khẩu *</label>
+                <div class="input-eye-wrap">
+                    <input type="password" id="reg_confirm" name="confirm_password" autocomplete="new-password"
+                           placeholder="Nhập lại mật khẩu mới"
+                           oninput="validateConfirm(this)" required>
+                    <span class="toggle-eye" onclick="toggleEye('reg_confirm',this)">
+                        <i class="fas fa-eye-slash"></i>
+                    </span>
+                </div>
+                <div id="hint_confirm" class="field-hint"></div>
+            </div>
+
+            <button type="submit" name="register" id="reg_btn" class="btn-register">
+                Tạo tài khoản
+            </button>
+        </form>
+
+        <div class="divider"><span>Đã có tài khoản?</span></div>
+        <div class="auth-footer">
+            <a href="/login.php">Đăng nhập ngay</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const regStates = { username:false, email:false, password:false, confirm:false };
+
+function setHint(id, msg, type) {
+    const el = document.getElementById('hint_' + id);
+    if (!el) return;
+    el.textContent = (type === 'ok' ? '✓ ' : '✗ ') + msg;
+    el.className = 'field-hint show ' + type;
+}
+function clearHint(id) {
+    const el = document.getElementById('hint_' + id);
+    if (el) { el.textContent = ''; el.className = 'field-hint'; }
+}
+function setInp(el, state) {
+    el.classList.remove('ok','error');
+    if (state !== null) el.classList.add(state ? 'ok' : 'error');
+}
+function updateSubmit() {
+    // Keep button clickable so user can submit or see validation errors on click
+}
+
+function validateUsername(el) {
+    const v = el.value.trim();
+    if (!v) { setInp(el,null); clearHint('username'); regStates.username=false; updateSubmit(); return false; }
+    const ok = /^[a-zA-Z0-9_.@+-]{3,50}$/.test(v);
+    regStates.username = ok;
+    setInp(el, ok);
+    ok ? setHint('username','Tên đăng nhập hợp lệ','ok')
+       : setHint('username','3–50 ký tự (chữ cái, chữ số, dấu _, ., @)','error');
+    updateSubmit();
+    return ok;
+}
+
+function validateEmail(el) {
+    const v = el.value.trim();
+    if (!v) { setInp(el,null); clearHint('email'); regStates.email=false; updateSubmit(); return false; }
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    regStates.email = ok;
+    setInp(el, ok);
+    ok ? setHint('email','Email hợp lệ','ok')
+       : setHint('email','Email không đúng định dạng','error');
+    updateSubmit();
+    return ok;
+}
+
+function validatePassword(el) {
+    const v = el.value;
+    if (!v) { setInp(el,null); clearHint('password'); regStates.password=false; updateSubmit(); updateStrength(''); return false; }
+    const hasUpper = /[A-Z]/.test(v);
+    const ok = v.length >= 6 && v.length <= 50 && hasUpper;
+    regStates.password = ok;
+    setInp(el, ok);
+    if (v.length < 6) {
+        setHint('password', 'Mật khẩu phải có ít nhất 6 ký tự', 'error');
+    } else if (!hasUpper) {
+        setHint('password', 'Mật khẩu cần ít nhất 1 chữ hoa (A–Z)', 'error');
+    } else {
+        setHint('password', 'Mật khẩu hợp lệ', 'ok');
+    }
+    updateStrength(v);
+    const cfm = document.getElementById('reg_confirm');
+    if (cfm && cfm.value) validateConfirm(cfm);
+    updateSubmit();
+    return ok;
+}
+
+function updateStrength(v) {
+    const fill = document.getElementById('pw_fill');
+    const txt  = document.getElementById('pw_strength_text');
+    if (!fill || !txt) return;
+    let s = 0;
+    if (v.length >= 6)  s++;
+    if (v.length >= 10) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    const map = [
+        { w: '', c: '', t: '' },
+        { w: '25%', c: '#e74c3c', t: 'Yếu' },
+        { w: '50%', c: '#f39c12', t: 'Trung bình' },
+        { w: '75%', c: '#3498db', t: 'Khá mạnh' },
+        { w: '90%', c: '#27ae60', t: 'Mạnh' },
+        { w: '100%', c: '#16a34a', t: 'Rất mạnh' }
+    ];
+    const lvl = map[s] || map[0];
+    fill.style.width = lvl.w;
+    fill.style.background = lvl.c;
+    txt.textContent = lvl.t;
+    txt.style.color = lvl.c;
+}
+
+function validateConfirm(el) {
+    const v   = el.value;
+    const pwd = document.getElementById('reg_password')?.value || '';
+    if (!v) { setInp(el,null); clearHint('confirm'); regStates.confirm=false; updateSubmit(); return false; }
+    const ok = v === pwd;
+    regStates.confirm = ok;
+    setInp(el, ok);
+    ok ? setHint('confirm','Mật khẩu trùng khớp','ok')
+       : setHint('confirm','Mật khẩu chưa khớp','error');
+    updateSubmit();
+    return ok;
+}
+
+function toggleEye(id, span) {
+    const inp = document.getElementById(id);
+    const isText = inp.type === 'text';
+    inp.type = isText ? 'password' : 'text';
+    span.querySelector('i').className = isText ? 'fas fa-eye-slash' : 'fas fa-eye';
+}
+
+// Client-side final check trước submit
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const uOk = validateUsername(document.getElementById('reg_username'));
+    const eOk = validateEmail(document.getElementById('reg_email'));
+    const pOk = validatePassword(document.getElementById('reg_password'));
+    const cOk = validateConfirm(document.getElementById('reg_confirm'));
+    if (!uOk || !eOk || !pOk || !cOk) {
+        e.preventDefault();
+        if (!uOk) document.getElementById('reg_username').focus();
+        else if (!eOk) document.getElementById('reg_email').focus();
+        else if (!pOk) document.getElementById('reg_password').focus();
+        else if (!cOk) document.getElementById('reg_confirm').focus();
+    }
+});
+</script>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

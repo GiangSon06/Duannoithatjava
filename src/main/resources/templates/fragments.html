@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ============================================================
+     HEAD  (tương ứng phần <head> của header.php)
+     ============================================================ -->
+<th:block th:fragment="head(title)">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title ?: 'GS LUXURY'}">GS LUXURY</title>
+
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script th:inline="javascript">
+        // Biến session gán vào JS để dùng cho logic "Mua ngay"
+        var isLoggedIn = /*[[${loggedIn ?: false}]]*/ false;
+    </script>
+</th:block>
+
+<!-- ============================================================
+     HEADER  (header.php: navbar + user dropdown + giỏ hàng popup)
+     ============================================================ -->
+<th:block th:fragment="header">
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="index.php" style="text-decoration:none; color:inherit; font-weight:bold; font-size:24px;">
+                    GS LUXURY
+                </a>
+            </div>
+
+            <ul class="menu">
+                <li><a href="index.php">Trang chủ</a></li>
+                <li class="dropdown"><a href="products.php">Sản phẩm</a></li>
+                <li><a href="promotion.php">Khuyến mãi</a></li>
+                <li><a href="about.php">Giới thiệu</a></li>
+                <li><a href="contact.php">Liên hệ</a></li>
+            </ul>
+
+            <div class="auth" style="display: flex; align-items: center; gap: 15px;">
+                <div class="search-wrap" style="position: relative;">
+                    <input type="text" id="search-box" placeholder="🔍 Tìm sản phẩm..." autocomplete="off"
+                           style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #fff; font-size: 13.5px; width: 170px; transition: all 0.3s;" />
+                    <div id="search-suggestions" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; width: 300px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid #eee; z-index: 99999; max-height: 380px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- GIỎ HÀNG (đặt trước tài khoản) -->
+                <div class="cart-icon" onclick="toggleCart()" style="cursor: pointer; position: relative; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); transition: all 0.2s;" title="Giỏ hàng">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-count"
+                          style="background-color: #e8352a; color: white; border-radius: 50%; min-width: 18px; height: 18px; padding: 0 4px; font-size: 11px; position: absolute; top: -5px; right: -5px; font-weight: bold; border: 2px solid #1a1a1a; display: flex; align-items: center; justify-content: center;"
+                          th:styleappend="${(cartCount ?: 0) > 0} ? 'display: flex;' : 'display: none;'"
+                          th:text="${cartCount ?: 0}">0</span>
+                </div>
+
+                <!-- NÚT QUẢN TRỊ VIÊN DÀNH CHO ADMIN (Nổi bật, bấm trực tiếp được) -->
+                <th:block th:if="${isAdmin}">
+                    <a href="/admin.php" class="header-admin-link"
+                       style="background: linear-gradient(135deg, #bfa15f, #d4b870); color: #1a1f2e; padding: 6px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 10px rgba(191,161,95,0.4); transition: transform 0.2s;"
+                       title="Vào trang quản trị viên">
+                        <i class="fas fa-shield-alt"></i> Quản trị viên
+                    </a>
+                </th:block>
+
+                <!-- ĐÃ ĐĂNG NHẬP: USER DROPDOWN -->
+                <th:block th:if="${loggedIn}">
+                    <div class="user-dropdown-wrap" id="userDropWrap">
+                        <button class="user-dropdown-btn" onclick="toggleUserMenu()" aria-label="Tài khoản">
+                            <img th:src="${headerAvatar ?: 'https://ui-avatars.com/api/?name=U&background=e8352a&color=fff&size=80'}"
+                                 alt="avatar" class="header-avatar"
+                                 onerror="this.src='https://ui-avatars.com/api/?name=U&background=e8352a&color=fff&size=80'">
+                            <span class="header-username" th:text="${headerName ?: username}">user</span>
+                            <i class="fas fa-chevron-down header-chevron"></i>
+                        </button>
+
+                        <div class="user-dropdown-menu" id="userDropMenu">
+                            <div class="udm-header">
+                                <img th:src="${headerAvatar ?: 'https://ui-avatars.com/api/?name=U&background=e8352a&color=fff&size=80'}"
+                                     alt="avatar" class="udm-avatar"
+                                     onerror="this.src='https://ui-avatars.com/api/?name=U&background=e8352a&color=fff&size=80'">
+                                <div>
+                                    <div class="udm-name" th:text="${headerName ?: username}">Tên</div>
+                                    <div class="udm-email" th:text="${username}">username</div>
+                                </div>
+                            </div>
+                            <div class="udm-divider"></div>
+                            <a href="/profile.php" class="udm-item">
+                                <i class="fas fa-user-circle"></i> Hồ sơ cá nhân
+                            </a>
+                            <a href="/profile.php?tab=address" class="udm-item">
+                                <i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng
+                            </a>
+                            <a href="/my_orders.php" class="udm-item">
+                                <i class="fas fa-box"></i> Đơn hàng của tôi
+                            </a>
+                            <th:block th:if="${isAdmin}">
+                                <div class="udm-divider"></div>
+                                <a href="/admin.php" class="udm-item udm-admin">
+                                    <i class="fas fa-shield-alt"></i> Trang quản trị
+                                </a>
+                            </th:block>
+                            <div class="udm-divider"></div>
+                            <a href="/logout.php" class="udm-item udm-logout">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+
+                    <style>
+                        .user-dropdown-wrap {
+                            position: relative;
+                        }
+                        .user-dropdown-btn {
+                            display: flex; align-items: center; gap: 8px;
+                            background: transparent; border: none; cursor: pointer;
+                            padding: 5px 10px; border-radius: 8px;
+                            transition: background .2s;
+                        }
+                        .user-dropdown-btn:hover { background: rgba(255,255,255,0.12); }
+                        .header-avatar {
+                            width: 34px; height: 34px; border-radius: 50%;
+                            object-fit: cover; border: 2px solid rgba(255,255,255,0.3);
+                            flex-shrink: 0;
+                        }
+                        .header-username {
+                            font-size: 13.5px; font-weight: 600; color: #fff;
+                            max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                        }
+                        .header-chevron {
+                            font-size: 10px; color: rgba(255,255,255,0.6);
+                            transition: transform .25s;
+                        }
+                        .user-dropdown-wrap.open .header-chevron { transform: rotate(180deg); }
+
+                        .user-dropdown-menu {
+                            display: none;
+                            position: absolute; top: calc(100% + 10px); right: 0;
+                            background: #fff; border-radius: 12px;
+                            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                            border: 1px solid #eee;
+                            min-width: 220px; z-index: 9999;
+                            animation: dropIn .2s ease;
+                            overflow: hidden;
+                        }
+                        @keyframes dropIn {
+                            from { opacity:0; transform: translateY(-8px); }
+                            to   { opacity:1; transform: translateY(0); }
+                        }
+                        .user-dropdown-wrap.open .user-dropdown-menu { display: block; }
+
+                        .udm-header {
+                            display: flex; align-items: center; gap: 12px;
+                            padding: 14px 16px;
+                            background: #fafafa;
+                        }
+                        .udm-avatar {
+                            width: 42px; height: 42px; border-radius: 50%;
+                            object-fit: cover; border: 2px solid #eee; flex-shrink: 0;
+                        }
+                        .udm-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+                        .udm-email { font-size: 12px; color: #999; margin-top: 1px; }
+
+                        .udm-divider { height: 1px; background: #f0f0f0; margin: 4px 0; }
+
+                        .udm-item {
+                            display: flex; align-items: center; gap: 10px;
+                            padding: 10px 16px; font-size: 14px; color: #333;
+                            text-decoration: none; transition: background .15s;
+                            cursor: pointer;
+                        }
+                        .udm-item:hover { background: #fff5f5; color: #e8352a; }
+                        .udm-item i { width: 16px; text-align: center; font-size: 14px; color: #999; }
+                        .udm-item:hover i { color: #e8352a; }
+                        .udm-admin { color: #e8352a !important; }
+                        .udm-admin i { color: #e8352a !important; }
+                        .udm-logout { color: #c0392b; }
+                        .udm-logout:hover { background: #fff0f0; }
+                        .udm-logout i { color: #c0392b !important; }
+                    </style>
+
+                    <script>
+                        function toggleUserMenu() {
+                            document.getElementById('userDropWrap').classList.toggle('open');
+                        }
+                        document.addEventListener('click', function(e) {
+                            const wrap = document.getElementById('userDropWrap');
+                            if (wrap && !wrap.contains(e.target)) {
+                                wrap.classList.remove('open');
+                            }
+                        });
+                    </script>
+                </th:block>
+
+                <!-- CHƯA ĐĂNG NHẬP -->
+                <div th:unless="${loggedIn}" class="login-links" style="font-size: 14px;">
+                    <a href="/login.php" style="color: white; text-decoration: none;">Đăng nhập</a>
+                    <span style="color:white">|</span>
+                    <a href="/register.php" style="color: white; text-decoration: none;">Đăng ký</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- CART POPUP - dùng chung cho tất cả trang (script.js cần các id này) -->
+    <div id="cart-popup" class="cart-popup">
+        <h3>🛒 Giỏ hàng</h3>
+        <ul id="cart-items"></ul>
+        <p><strong>Tổng tiền: <span id="cart-total">0</span>đ</strong></p>
+        <div class="cart-actions">
+            <button onclick="clearCart()">Xóa giỏ hàng</button>
+            <button onclick="checkout()">Thanh toán</button>
+        </div>
+    </div>
+</th:block>
+
+<!-- Giữ tên fragment "cart" để index/products/product_detail không lỗi.
+     Giỏ hàng giờ nằm trong fragment "header" như PHP gốc nên fragment này để rỗng
+     (tránh trùng id cart-popup). -->
+<th:block th:fragment="cart"></th:block>
+
+<!-- ============================================================
+     FOOTER  (footer.php: footer + chat AI widget + script.js)
+     ============================================================ -->
+<th:block th:fragment="footer">
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>GS LUXURY</h3>
+                <p>
+                    GS LUXURY là thương hiệu nội thất với nhiều năm kinh nghiệm
+                    trong sản xuất &amp; xuất khẩu nội thất đạt chuẩn quốc tế.
+                </p>
+            </div>
+
+            <div class="footer-col">
+                <h3>THÔNG TIN</h3>
+                <ul>
+                    <li><a href="#">Chính Sách Bán Hàng</a></li>
+                    <li><a href="#">Chính Sách Giao Hàng &amp; Lắp Đặt</a></li>
+                    <li><a href="#">Chính Sách Bảo Hành &amp; Bảo Trì</a></li>
+                    <li><a href="#">Chính Sách Đổi Trả</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>THÔNG TIN LIÊN HỆ</h3>
+                <p><strong>Trụ sở chính:</strong> 41A Đ. Phú Diễn, Bắc Từ Liêm, Hà Nội</p>
+                <p>Hotline: 0326976832</p>
+                <p>CSKH: Dangnamson24@gmail.com</p>
+            </div>
+
+            <div class="footer-col">
+                <h3>FANPAGE</h3>
+                <iframe
+                        src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Ffacebook&amp;tabs&amp;width=300&amp;height=200&amp;small_header=false&amp;adapt_container_width=true&amp;hide_cover=false&amp;show_facepile=true"
+                        width="300"
+                        height="200"
+                        style="border: none; overflow: hidden"
+                        scrolling="no"
+                        frameborder="0"
+                        allowfullscreen="true"
+                ></iframe>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="https://www.facebook.com/giang.son.114064"><img src="picture/facebook.jpg" alt="Facebook" /></a>
+                <a href="https://www.youtube.com/@kenjiac1413"><img src="picture/youtube.png" alt="YouTube" /></a>
+                <a href="https://www.instagram.com/nhimsthongthai/"><img src="picture/instagram.jpg" alt="Instagram" /></a>
+                <a href="https://www.tiktok.com/@nhimsthongthai"><img src="picture/tiktok.jpg" alt="TikTok" /></a>
+            </div>
+            <p>
+                <a href="https://www.google.com/maps/place/Hanoi+University+of+Natural+Resources+and+Environment/@21.0470484,105.7581067,16z/data=!4m6!3m5!1s0x313454c3ce577141:0xb1a1ac92701777bc!8m2!3d21.0470486!4d105.7624371!16s%2Fg%2F11b6dylw9c?entry=ttu&amp;g_ep=EgoyMDI1MDkxMC4wIKXMDSoASAFQAw%3D%3D"
+                   target="_blank">Chỉ đường đến showroom trên Google Maps</a>
+            </p>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 GS LUXURY. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= CHAT AI WIDGET ================= -->
+    <div id="chat-widget">
+
+        <!-- NÚT MỞ CHAT -->
+        <div id="chat-fab" onclick="toggleChat()" title="Chat với AI GS LUXURY">
+            <div id="fab-icon-open">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            </div>
+            <div id="fab-icon-close" style="display:none">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </div>
+            <span id="fab-badge" style="display:none">1</span>
+        </div>
+
+        <!-- CHAT BOX -->
+        <div id="chat-box" class="chat-hidden">
+
+            <!-- HEADER -->
+            <div class="cw-header">
+                <div class="cw-header-left">
+                    <div class="cw-avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                    </div>
+                    <div>
+                        <div class="cw-name">GS LUXURY AI</div>
+                        <div class="cw-status"><span class="cw-dot"></span> Luôn sẵn sàng</div>
+                    </div>
+                </div>
+                <button class="cw-close-btn" onclick="toggleChat()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+
+            <!-- BANNER -->
+            <div class="cw-banner">
+                <div class="cw-banner-text">Xin chào! 👋</div>
+                <div class="cw-banner-sub">Tôi có thể tư vấn sản phẩm, báo giá và hỗ trợ đặt hàng cho bạn.</div>
+            </div>
+
+            <!-- MESSAGES -->
+            <div class="cw-body" id="chat-content">
+                <div th:unless="${loggedIn}" class="cw-login-prompt">
+                    <div style="font-size:36px;margin-bottom:10px">🔒</div>
+                    <div style="font-weight:600;color:#1a1f2e;margin-bottom:6px">Đăng nhập để chat</div>
+                    <div style="font-size:12px;color:#aaa;margin-bottom:14px">Bạn cần đăng nhập để nhận tư vấn từ AI GS LUXURY</div>
+                    <a href="login.php" class="cw-login-btn">Đăng nhập ngay</a>
+                </div>
+                <div th:if="${loggedIn}" class="cw-msg bot">
+                    <div class="cw-msg-avatar">AI</div>
+                    <div class="cw-bubble">
+                        Xin chào! Tôi là trợ lý AI của <strong>GS LUXURY</strong>. Tôi có thể tư vấn sản phẩm nội thất, báo giá và hỗ trợ đặt hàng. Bạn cần tư vấn gì không? 😊
+                        <div class="cw-time" th:text="${#dates.format(#dates.createNow(), 'HH:mm')}">00:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TYPING -->
+            <div id="typing-indicator" style="display:none" class="cw-typing">
+                <div class="cw-msg-avatar" style="width:26px;height:26px;font-size:9px">AI</div>
+                <div class="cw-typing-bubble">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <!-- QUICK REPLIES -->
+            <div th:if="${loggedIn}" class="cw-quick" id="quick-replies">
+                <button onclick="quickSend('Tư vấn sofa phòng khách')">🛋️ Sofa</button>
+                <button onclick="quickSend('Giường ngủ giá bao nhiêu?')">🛏️ Giường</button>
+                <button onclick="quickSend('Sản phẩm đang khuyến mãi')">🏷️ Sale</button>
+            </div>
+
+            <!-- INPUT -->
+            <div th:if="${loggedIn}" class="cw-footer">
+                <input type="text" id="msg-input" placeholder="Nhập tin nhắn..." autocomplete="off">
+                <button onclick="sendMessage()" id="send-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* ===== CHAT WIDGET ===== */
+        #chat-widget { position:fixed; bottom:24px; right:24px; z-index:9999; font-family:'Segoe UI',sans-serif; }
+
+        /* FAB Button */
+        #chat-fab {
+            width:56px; height:56px; border-radius:50%;
+            background:linear-gradient(135deg,#bfa15f,#d4b870);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; box-shadow:0 4px 20px rgba(191,161,95,0.45);
+            transition:transform .2s, box-shadow .2s; position:relative;
+        }
+        #chat-fab:hover { transform:scale(1.08); box-shadow:0 6px 28px rgba(191,161,95,0.55); }
+        #fab-badge {
+            position:absolute; top:-4px; right:-4px;
+            background:#e74c3c; color:white; font-size:10px; font-weight:700;
+            width:18px; height:18px; border-radius:50%; display:flex;
+            align-items:center; justify-content:center; border:2px solid white;
+        }
+
+        /* Chat Box */
+        #chat-box {
+            position:absolute; bottom:70px; right:0;
+            width:340px; height:520px;
+            background:white; border-radius:20px;
+            box-shadow:0 12px 48px rgba(0,0,0,0.18);
+            display:flex; flex-direction:column; overflow:hidden;
+            transition:transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+            transform-origin:bottom right;
+        }
+        .chat-hidden { transform:scale(0.85); opacity:0; pointer-events:none; }
+        .chat-visible { transform:scale(1); opacity:1; pointer-events:all; }
+
+        /* Header */
+        .cw-header {
+            background:linear-gradient(135deg,#1a1f2e,#2c3e50);
+            padding:14px 16px; display:flex; align-items:center;
+            justify-content:space-between; flex-shrink:0;
+        }
+        .cw-header-left { display:flex; align-items:center; gap:10px; }
+        .cw-avatar {
+            width:38px; height:38px; border-radius:50%;
+            background:rgba(191,161,95,0.25); border:2px solid #bfa15f;
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+        }
+        .cw-name { font-size:14px; font-weight:700; color:white; }
+        .cw-status { display:flex; align-items:center; gap:5px; font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px; }
+        .cw-dot { width:7px; height:7px; border-radius:50%; background:#2ecc71; display:inline-block; animation:pulse-dot 2s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+        .cw-close-btn { background:rgba(255,255,255,0.1); border:none; color:rgba(255,255,255,0.7); width:30px; height:30px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.2s; }
+        .cw-close-btn:hover { background:rgba(255,255,255,0.2); color:white; }
+
+        /* Banner */
+        .cw-banner {
+            background:linear-gradient(135deg,#bfa15f,#d4b870);
+            padding:14px 16px; flex-shrink:0;
+        }
+        .cw-banner-text { font-size:18px; font-weight:700; color:white; }
+        .cw-banner-sub { font-size:12px; color:rgba(255,255,255,0.85); margin-top:3px; line-height:1.5; }
+
+        /* Messages */
+        .cw-body {
+            flex:1; padding:14px 12px; overflow-y:auto;
+            display:flex; flex-direction:column; gap:10px;
+            background:#f8f9fb;
+        }
+        .cw-body::-webkit-scrollbar { width:4px; }
+        .cw-body::-webkit-scrollbar-thumb { background:#ddd; border-radius:2px; }
+
+        .cw-msg { display:flex; align-items:flex-end; gap:7px; }
+        .cw-msg.bot { flex-direction:row; }
+        .cw-msg.me  { flex-direction:row-reverse; }
+
+        .cw-msg-avatar {
+            width:28px; height:28px; border-radius:50%; flex-shrink:0;
+            background:linear-gradient(135deg,#bfa15f,#d4b870);
+            display:flex; align-items:center; justify-content:center;
+            font-size:10px; font-weight:700; color:white;
+        }
+
+        .cw-bubble {
+            max-width:75%; padding:10px 13px; border-radius:18px;
+            font-size:13px; line-height:1.55; word-wrap:break-word;
+            position:relative;
+        }
+        .cw-msg.bot .cw-bubble { background:white; color:#1a1f2e; border-bottom-left-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+        .cw-msg.me  .cw-bubble { background:linear-gradient(135deg,#bfa15f,#c9ac6a); color:white; border-bottom-right-radius:4px; }
+        .cw-time { font-size:10px; opacity:.5; margin-top:4px; text-align:right; }
+
+        /* Typing */
+        .cw-typing { display:flex; align-items:center; gap:7px; padding:0 12px 8px; }
+        .cw-typing-bubble { background:white; border-radius:18px; border-bottom-left-radius:4px; padding:10px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.08); display:flex; gap:4px; align-items:center; }
+        .cw-typing-bubble span { width:7px; height:7px; background:#bfa15f; border-radius:50%; animation:typing-bounce .9s infinite; }
+        .cw-typing-bubble span:nth-child(2) { animation-delay:.2s; }
+        .cw-typing-bubble span:nth-child(3) { animation-delay:.4s; }
+        @keyframes typing-bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+        /* Quick replies */
+        .cw-quick { padding:6px 12px 8px; display:flex; gap:6px; flex-wrap:wrap; background:#f8f9fb; flex-shrink:0; }
+        .cw-quick button {
+            background:white; border:1.5px solid #e8e0cc; color:#8a6500;
+            padding:5px 11px; border-radius:20px; font-size:11px; font-weight:600;
+            cursor:pointer; transition:.2s; white-space:nowrap;
+        }
+        .cw-quick button:hover { background:#fdf6e3; border-color:#bfa15f; }
+
+        /* Input */
+        .cw-footer {
+            padding:10px 12px; border-top:1px solid #f0f0f0;
+            display:flex; gap:8px; align-items:center;
+            background:white; flex-shrink:0;
+        }
+        .cw-footer input {
+            flex:1; padding:10px 14px; border:1.5px solid #eee;
+            border-radius:24px; font-size:13px; outline:none;
+            font-family:inherit; transition:border-color .2s;
+            background:#f8f9fb;
+        }
+        .cw-footer input:focus { border-color:#bfa15f; background:white; }
+        #send-btn {
+            width:38px; height:38px; border-radius:50%; border:none;
+            background:linear-gradient(135deg,#bfa15f,#d4b870);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; flex-shrink:0; transition:.2s;
+        }
+        #send-btn:hover { transform:scale(1.1); }
+
+        /* Login prompt */
+        .cw-login-prompt { text-align:center; margin:auto; padding:20px; }
+        .cw-login-btn {
+            display:inline-block; background:linear-gradient(135deg,#bfa15f,#d4b870);
+            color:white; padding:10px 24px; border-radius:24px;
+            text-decoration:none; font-size:13px; font-weight:700;
+            transition:.2s;
+        }
+        .cw-login-btn:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(191,161,95,.4); }
+    </style>
+
+    <script>
+        function toggleChat() {
+            const box = document.getElementById('chat-box');
+            const iconOpen  = document.getElementById('fab-icon-open');
+            const iconClose = document.getElementById('fab-icon-close');
+            const isOpen = box.classList.contains('chat-visible');
+            if (isOpen) {
+                box.classList.remove('chat-visible');
+                box.classList.add('chat-hidden');
+                iconOpen.style.display  = 'flex';
+                iconClose.style.display = 'none';
+            } else {
+                box.classList.remove('chat-hidden');
+                box.classList.add('chat-visible');
+                iconOpen.style.display  = 'none';
+                iconClose.style.display = 'flex';
+                document.getElementById('fab-badge').style.display = 'none';
+                scrollToBottom();
+                const inp = document.getElementById('msg-input');
+                if (inp) setTimeout(() => inp.focus(), 300);
+            }
+        }
+
+        function scrollToBottom() {
+            const b = document.getElementById('chat-content');
+            if (b) b.scrollTop = b.scrollHeight;
+        }
+
+        function addMsg(text, type, time) {
+            const cc = document.getElementById('chat-content');
+            const div = document.createElement('div');
+            div.className = 'cw-msg ' + type;
+            const t = time || new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+            if (type === 'bot') {
+                div.innerHTML = `<div class="cw-msg-avatar">AI</div><div class="cw-bubble">${text}<div class="cw-time">${t}</div></div>`;
+            } else {
+                div.innerHTML = `<div class="cw-bubble">${text}<div class="cw-time">${t}</div></div>`;
+            }
+            cc.appendChild(div);
+            scrollToBottom();
+        }
+
+        function quickSend(text) {
+            document.getElementById('msg-input').value = text;
+            document.getElementById('quick-replies').style.display = 'none';
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const msg   = input.value.trim();
+            if (!msg) return;
+
+            addMsg(msg, 'me');
+            input.value = '';
+
+            document.getElementById('quick-replies') && (document.getElementById('quick-replies').style.display = 'none');
+            document.getElementById('typing-indicator').style.display = 'flex';
+            scrollToBottom();
+
+            const fd = new FormData();
+            fd.append('action','send');
+            fd.append('message', msg);
+
+            fetch('/chat_backend.php',{method:'POST',body:fd})
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('typing-indicator').style.display = 'none';
+                    if (data.reply) addMsg(data.reply, 'bot');
+                })
+                .catch(() => {
+                    document.getElementById('typing-indicator').style.display = 'none';
+                    addMsg('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại! 😅','bot');
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const inp = document.getElementById('msg-input');
+            if (inp) inp.addEventListener('keypress', e => { if(e.key==='Enter') sendMessage(); });
+        });
+
+        // Tải lịch sử chat
+
+        fetch('/chat_backend.php', { method:'POST', body: (() => { const f=new FormData(); f.append('action','history'); return f; })() })
+            .then(r => r.json())
+            .then(data => {
+                if (data.history && data.history.length > 0) {
+                    data.history.forEach(m => {
+                        const t = new Date(m.created_at).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+                        addMsg(m.message, m.sender_id == 0 ? 'bot' : 'me', t);
+                    });
+                }
+            })
+            .catch(() => {});
+    </script>
+    <script src="/script.js"></script>
+</th:block>
+
+</body>
+</html>

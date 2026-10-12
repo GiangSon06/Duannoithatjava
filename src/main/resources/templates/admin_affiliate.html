@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Quản lý Affiliate — GS LUXURY Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <div class="admin-page-title"><i class="fas fa-handshake"></i> Quản lý Cộng tác viên (Affiliate)</div>
+
+    <!-- TABS -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid #f0f0f0;padding-bottom:0">
+        <button type="button" onclick="showTab('affiliates')" id="t-aff" class="atab"
+                th:classappend="${tab == 'affiliates' or tab == null or tab == ''} ? 'active-atab'">
+            <i class="fas fa-users"></i> Cộng tác viên
+        </button>
+        <button type="button" onclick="showTab('withdrawals')" id="t-wd" class="atab"
+                th:classappend="${tab == 'withdrawals'} ? 'active-atab'">
+            <i class="fas fa-money-bill-wave"></i> Yêu cầu rút tiền
+        </button>
+        <button type="button" onclick="showTab('commissions')" id="t-comm" class="atab"
+                th:classappend="${tab == 'commissions'} ? 'active-atab'">
+            <i class="fas fa-coins"></i> Hoa hồng
+        </button>
+    </div>
+
+    <style>
+    .atab { padding:10px 20px; border:none; background:none; cursor:pointer; font-size:14px; font-weight:600; color:#aaa; border-bottom:3px solid transparent; transition:.18s; margin-bottom:-2px; outline:none; }
+    .atab:hover { color:#bfa15f; }
+    .active-atab { color:#bfa15f!important; border-bottom-color:#bfa15f!important; }
+    .tab-pane { display:none; }
+    .tab-pane.active { display:block; }
+    </style>
+
+    <!-- CTV LIST -->
+    <div id="tab-affiliates" class="tab-pane" th:classappend="${tab == 'affiliates' or tab == null or tab == ''} ? 'active'">
+        <div class="admin-card" style="padding:0;overflow:hidden">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Người dùng</th>
+                        <th>Mã giới thiệu</th>
+                        <th>Hoa hồng</th>
+                        <th>Số dư</th>
+                        <th>Tổng kiếm</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="a : ${affiliates}">
+                        <td>
+                            <div style="font-weight:600;color:#1a1f2e" th:text="${a.username}"></div>
+                            <div style="font-size:11px;color:#aaa" th:text="${(a.bank_name != null ? a.bank_name : '') + ' — ' + (a.bank_account != null ? a.bank_account : '')}"></div>
+                        </td>
+                        <td><span style="font-family:monospace;font-weight:700;background:#f8f9fb;padding:3px 8px;border-radius:6px" th:text="${a.ref_code}"></span></td>
+                        <td style="font-weight:700;color:#bfa15f" th:text="${a.commission_rate} + '%'"></td>
+                        <td style="font-weight:700;color:#27ae60" th:text="${#numbers.formatInteger(a.balance, 1, 'COMMA')} + 'đ'"></td>
+                        <td style="color:#555" th:text="${#numbers.formatInteger(a.total_earned, 1, 'COMMA')} + 'đ'"></td>
+                        <td>
+                            <span class="badge" th:classappend="${a.status == 'active'} ? 'badge-success' : (${a.status == 'pending'} ? 'badge-warning' : 'badge-danger')"
+                                  th:text="${a.status == 'active' ? '✓ Hoạt động' : (a.status == 'pending' ? '⏳ Chờ duyệt' : '🔒 Bị khóa')}"></span>
+                        </td>
+                        <td>
+                            <form method="post" action="/admin_affiliate.php" style="display:flex;gap:6px">
+                                <input type="hidden" name="aff_id" th:value="${a.id}">
+                                <button th:if="${a.status != 'active'}" name="action" value="approve_aff"
+                                        class="btn btn-primary" style="font-size:12px;padding:5px 10px">
+                                    <i class="fas fa-check"></i> Duyệt
+                                </button>
+                                <button th:if="${a.status == 'active'}" name="action" value="ban_aff"
+                                        class="btn btn-danger" style="font-size:12px;padding:5px 10px"
+                                        onclick="return confirm('Khóa CTV này?')">
+                                    <i class="fas fa-ban"></i> Khóa
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(affiliates)}">
+                        <td colspan="7" style="text-align:center;color:#aaa;padding:30px">Chưa có cộng tác viên nào</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- WITHDRAWALS -->
+    <div id="tab-withdrawals" class="tab-pane" th:classappend="${tab == 'withdrawals'} ? 'active'">
+        <div class="admin-card" style="padding:0;overflow:hidden">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>CTV</th>
+                        <th>Số tiền</th>
+                        <th>Ngân hàng</th>
+                        <th>Số TK</th>
+                        <th>Chủ TK</th>
+                        <th>Ghi chú</th>
+                        <th>Ngày yêu cầu</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="w : ${withdrawals}">
+                        <td style="font-weight:600;color:#1a1f2e" th:text="${w.username}"></td>
+                        <td style="font-weight:700;color:#e74c3c" th:text="${#numbers.formatInteger(w.amount, 1, 'COMMA')} + 'đ'"></td>
+                        <td th:text="${w.bank_name ?: '—'}"></td>
+                        <td style="font-family:monospace" th:text="${w.bank_account ?: '—'}"></td>
+                        <td th:text="${w.bank_owner ?: '—'}"></td>
+                        <td style="font-size:12px;color:#aaa" th:text="${w.note ?: '—'}"></td>
+                        <td style="font-size:12px;color:#aaa"
+                            th:text="${w.created_at != null ? #dates.format(w.created_at, 'dd/MM/yyyy') : '—'}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${w.status == 'approved'} ? 'badge-success' : (${w.status == 'rejected'} ? 'badge-danger' : 'badge-warning')"
+                                  th:text="${w.status == 'approved' ? '✓ Đã duyệt' : (w.status == 'rejected' ? '✕ Từ chối' : '⏳ Chờ')}"></span>
+                        </td>
+                        <td>
+                            <form th:if="${w.status == 'pending'}" method="post" action="/admin_affiliate.php" style="display:flex;gap:6px">
+                                <input type="hidden" name="wd_id" th:value="${w.id}">
+                                <button name="action" value="approve_withdrawal" class="btn btn-primary" style="font-size:12px;padding:5px 10px">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button name="action" value="reject_withdrawal" class="btn btn-danger" style="font-size:12px;padding:5px 10px"
+                                        onclick="return confirm('Từ chối yêu cầu rút tiền?')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                            <span th:unless="${w.status == 'pending'}" style="color:#aaa;font-size:12px">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(withdrawals)}">
+                        <td colspan="9" style="text-align:center;color:#aaa;padding:30px">Chưa có yêu cầu rút tiền</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- COMMISSIONS -->
+    <div id="tab-commissions" class="tab-pane" th:classappend="${tab == 'commissions'} ? 'active'">
+        <div class="admin-card" style="padding:0;overflow:hidden">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>CTV</th>
+                        <th>Đơn hàng</th>
+                        <th>Hoa hồng</th>
+                        <th>Loại</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${commissions}">
+                        <td style="font-weight:600;color:#1a1f2e" th:text="${c.aff_name}"></td>
+                        <td style="font-weight:700;color:#bfa15f" th:text="'#' + ${c.order_id}"></td>
+                        <td style="font-weight:700;color:#27ae60" th:text="${#numbers.formatInteger(c.commission_amt, 1, 'COMMA')} + 'đ'"></td>
+                        <td><span class="badge badge-info" th:text="${c.type}"></span></td>
+                        <td>
+                            <span class="badge" th:classappend="${c.status == 'confirmed'} ? 'badge-success' : (${c.status == 'paid'} ? 'badge-success' : 'badge-warning')"
+                                  th:text="${c.status}"></span>
+                        </td>
+                        <td>
+                            <form th:if="${c.status == 'pending'}" method="post" action="/admin_affiliate.php" style="display:inline">
+                                <input type="hidden" name="comm_id" th:value="${c.id}">
+                                <button name="action" value="confirm_commission" class="btn btn-primary" style="font-size:12px;padding:5px 12px">
+                                    <i class="fas fa-check"></i> Xác nhận
+                                </button>
+                            </form>
+                            <span th:unless="${c.status == 'pending'}" style="color:#aaa;font-size:12px">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(commissions)}">
+                        <td colspan="6" style="text-align:center;color:#aaa;padding:30px">Chưa có hoa hồng nào</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(name) {
+    const map = { affiliates: 't-aff', withdrawals: 't-wd', commissions: 't-comm' };
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.atab').forEach(b => b.classList.remove('active-atab'));
+    
+    const targetPane = document.getElementById('tab-' + name);
+    const targetBtn = document.getElementById(map[name]);
+    if (targetPane) targetPane.classList.add('active');
+    if (targetBtn) targetBtn.classList.add('active-atab');
+    
+    if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', '/admin_affiliate.php?tab=' + name);
+    }
+}
+</script>
+</body>
+</html>

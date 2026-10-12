@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head('Cộng tác viên')}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<style>
+.aff-wrap { max-width:1100px; margin:0 auto; padding:40px 20px; }
+.aff-banner {
+    background:linear-gradient(135deg,#1a1f2e,#2c3e50);
+    border-radius:18px; padding:30px 32px; color:white; margin-bottom:30px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+}
+.aff-banner h1 { font-size:24px; font-weight:800; margin:0 0 6px; }
+.aff-banner p  { font-size:14px; opacity:.75; margin:0; }
+.ref-badge {
+    background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.2);
+    border-radius:10px; padding:12px 18px; font-size:13px;
+}
+.ref-badge .label { opacity:.6; font-size:11px; margin-bottom:3px; }
+.ref-code { font-size:20px; font-weight:800; color:#d4b870; letter-spacing:2px; cursor:pointer; }
+.ref-code:hover { text-decoration:underline; }
+
+/* Stats */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; margin-bottom:30px; }
+.stat-card { background:white; border-radius:14px; padding:22px 20px; border:1px solid #f0f0f0; box-shadow:0 2px 12px rgba(0,0,0,0.05); }
+.stat-card .sc-icon { font-size:28px; margin-bottom:10px; }
+.stat-card .sc-val  { font-size:24px; font-weight:800; color:#1a1f2e; }
+.stat-card .sc-lbl  { font-size:12px; color:#aaa; margin-top:3px; }
+.stat-card.gold .sc-val { color:#bfa15f; }
+.stat-card.green .sc-val { color:#27ae60; }
+
+/* Link share */
+.link-box { background:white; border-radius:14px; padding:22px; border:1px solid #f0f0f0; box-shadow:0 2px 12px rgba(0,0,0,0.05); margin-bottom:24px; }
+.link-box h3 { font-size:15px; font-weight:700; color:#1a1f2e; margin:0 0 12px; }
+.link-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.link-input { flex:1; min-width:200px; padding:10px 14px; border:1.5px solid #e8e8e8; border-radius:9px; font-size:13px; color:#555; background:#f8f9fb; }
+.btn-copy { padding:10px 20px; background:linear-gradient(135deg,#bfa15f,#d4b870); color:white; border:none; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; transition:.2s; white-space:nowrap; }
+.btn-copy:hover { transform:translateY(-1px); }
+
+/* Grid: withdraw + commission */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px; }
+@media(max-width:700px) { .two-col { grid-template-columns:1fr; } }
+
+.panel { background:white; border-radius:14px; padding:24px; border:1px solid #f0f0f0; box-shadow:0 2px 12px rgba(0,0,0,0.05); }
+.panel h3 { font-size:15px; font-weight:700; color:#1a1f2e; margin:0 0 18px; padding-bottom:10px; border-bottom:1px solid #f5f5f5; }
+
+/* Withdraw form */
+.ig { margin-bottom:13px; }
+.ig label { display:block; font-size:12px; font-weight:600; color:#666; margin-bottom:4px; }
+.ig input { width:100%; padding:9px 12px; border:1.5px solid #e8e8e8; border-radius:8px; font-size:13px; font-family:inherit; transition:border-color .2s; box-sizing:border-box; }
+.ig input:focus { outline:none; border-color:#bfa15f; }
+.btn-withdraw { width:100%; padding:11px; background:#1a1f2e; color:white; border:none; border-radius:9px; font-size:14px; font-weight:700; cursor:pointer; transition:.2s; margin-top:6px; }
+.btn-withdraw:hover { background:#2c3e50; }
+
+/* Table */
+.comm-table { width:100%; border-collapse:collapse; font-size:13px; }
+.comm-table th { padding:8px 10px; font-weight:700; color:#888; text-align:left; border-bottom:2px solid #f0f0f0; font-size:12px; text-transform:uppercase; }
+.comm-table td { padding:9px 10px; border-bottom:1px solid #f8f8f8; color:#1a1f2e; }
+.comm-table tr:last-child td { border:none; }
+.status-paid    { background:#d1e7dd; color:#0a3622; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
+.status-pending { background:#fff3cd; color:#664d03; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
+.empty-row td { text-align:center; color:#aaa; padding:24px; }
+
+.msg-success { background:#d1e7dd; color:#0a3622; border:1px solid #a3cfbb; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; }
+.msg-error   { background:#fdf2f2; color:#c0392b; border:1px solid #f5c6c6; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; }
+
+.copy-toast { position:fixed; bottom:24px; right:24px; background:#1a1f2e; color:white; padding:12px 20px; border-radius:10px; font-size:14px; font-weight:600; opacity:0; transition:opacity .3s; z-index:9999; pointer-events:none; }
+.copy-toast.show { opacity:1; }
+</style>
+
+<div class="aff-wrap">
+
+    <!-- Banner -->
+    <div class="aff-banner">
+        <div>
+            <h1>💰 Cộng tác viên</h1>
+            <p th:text="'Xin chào, ' + ${affiliate.bank_owner ?: affiliate.username ?: 'bạn'} + '! Cảm ơn bạn đã đồng hành cùng GS LUXURY.'"></p>
+        </div>
+        <div class="ref-badge">
+            <div class="label">MÃ GIỚI THIỆU CỦA BẠN</div>
+            <div class="ref-code" onclick="copyCode(this)" th:text="${affiliate.ref_code}">SLREF</div>
+            <div style="font-size:11px;opacity:.5;margin-top:3px;">Click để sao chép</div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card gold">
+            <div class="sc-icon">💰</div>
+            <div class="sc-val" th:text="${#numbers.formatInteger(affiliate.balance ?: 0, 1, 'COMMA')} + 'đ'">0đ</div>
+            <div class="sc-lbl">Số dư hiện tại</div>
+        </div>
+        <div class="stat-card green">
+            <div class="sc-icon">📈</div>
+            <div class="sc-val" th:text="${#numbers.formatInteger(affiliate.total_earned ?: 0, 1, 'COMMA')} + 'đ'">0đ</div>
+            <div class="sc-lbl">Tổng kiếm được</div>
+        </div>
+        <div class="stat-card">
+            <div class="sc-icon">📦</div>
+            <div class="sc-val" th:text="${commissions != null ? #lists.size(commissions) : 0}">0</div>
+            <div class="sc-lbl">Đơn hàng giới thiệu</div>
+        </div>
+        <div class="stat-card">
+            <div class="sc-icon">✅</div>
+            <div class="sc-val" th:text="${affiliate.status == 'active' ? 'Hoạt động' : 'Chờ duyệt'}">-</div>
+            <div class="sc-lbl">Trạng thái tài khoản</div>
+        </div>
+    </div>
+
+    <!-- Link chia sẻ -->
+    <div class="link-box">
+        <h3>🔗 Link giới thiệu của bạn</h3>
+        <div class="link-row">
+            <input class="link-input" id="refLink" readonly
+                   th:value="${@environment.getProperty('app.base-url','http://localhost:8081')} + '/register.php?ref=' + ${affiliate.ref_code}">
+            <button class="btn-copy" onclick="copyLink()">
+                <i class="fas fa-copy"></i> Sao chép
+            </button>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="msg-success" th:if="${success}" th:text="${success}"></div>
+    <div class="msg-error"   th:if="${error}"   th:text="${error}"></div>
+
+    <div class="two-col">
+        <!-- Rút tiền -->
+        <div class="panel">
+            <h3>🏦 Yêu cầu rút tiền</h3>
+            <form method="post" action="/affiliate.php">
+                <input type="hidden" name="action" value="withdraw">
+                <div class="ig">
+                    <label>Số tiền muốn rút (tối thiểu 50,000đ)</label>
+                    <input type="number" name="amount" min="50000" step="1000" placeholder="VD: 200000" required>
+                </div>
+                <div class="ig">
+                    <label>Ngân hàng</label>
+                    <input list="withdrawBankList" name="bank_name" th:value="${affiliate.bank_name}" required autocomplete="off">
+                    <datalist id="withdrawBankList">
+                        <option value="Vietcombank (Ngân hàng Ngoại thương Việt Nam)">
+                        <option value="MB Bank (Ngân hàng Quân đội)">
+                        <option value="Techcombank (Ngân hàng Kỹ thương Việt Nam)">
+                        <option value="VietinBank (Ngân hàng Công thương Việt Nam)">
+                        <option value="BIDV (Ngân hàng Đầu tư và Phát triển Việt Nam)">
+                        <option value="Agribank (Ngân hàng Nông nghiệp & PTNT)">
+                        <option value="ACB (Ngân hàng Á Châu)">
+                        <option value="VPBank (Ngân hàng Việt Nam Thịnh Vượng)">
+                        <option value="TPBank (Ngân hàng Tiên Phong)">
+                        <option value="VIB (Ngân hàng Quốc tế)">
+                        <option value="Sacombank (Ngân hàng Sài Gòn Thương Tín)">
+                        <option value="HDBank (Ngân hàng Phát triển TP.HCM)">
+                        <option value="MSB (Ngân hàng Hàng Hải)">
+                        <option value="SHB (Ngân hàng Sài Gòn - Hà Nội)">
+                        <option value="OCB (Ngân hàng Phương Đông)">
+                        <option value="MoMo (Ví điện tử MoMo)">
+                        <option value="ZaloPay (Ví điện tử ZaloPay)">
+                    </datalist>
+                </div>
+                <div class="ig">
+                    <label>Số tài khoản</label>
+                    <input name="bank_account" th:value="${affiliate.bank_account}" required>
+                </div>
+                <div class="ig">
+                    <label>Chủ tài khoản (viết in hoa không dấu)</label>
+                    <input name="bank_owner" th:value="${affiliate.bank_owner}"
+                           style="text-transform: uppercase;"
+                           oninput="this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'D').replace(/Đ/g, 'D').toUpperCase()"
+                           required>
+                </div>
+                <div class="ig">
+                    <label>Ghi chú (tùy chọn)</label>
+                    <input name="note" placeholder="Ghi chú cho yêu cầu rút">
+                </div>
+                <button type="submit" class="btn-withdraw">
+                    <i class="fas fa-paper-plane"></i> Gửi yêu cầu rút
+                </button>
+            </form>
+        </div>
+
+        <!-- Hoa hồng -->
+        <div class="panel">
+            <h3>💵 Lịch sử hoa hồng</h3>
+            <table class="comm-table">
+                <thead>
+                    <tr>
+                        <th>Đơn hàng</th>
+                        <th>Hoa hồng</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${commissions}" th:if="${commissions != null and !#lists.isEmpty(commissions)}">
+                        <td th:text="'#' + ${c.order_id}"></td>
+                        <td style="font-weight:700;color:#bfa15f;"
+                            th:text="${#numbers.formatInteger(c.amount, 1, 'COMMA')} + 'đ'"></td>
+                        <td>
+                            <span th:class="${c.status == 'paid' ? 'status-paid' : 'status-pending'}"
+                                  th:text="${c.status == 'paid' ? '✓ Đã thanh toán' : '⏳ Chờ xử lý'}"></span>
+                        </td>
+                    </tr>
+                    <tr th:if="${commissions == null or #lists.isEmpty(commissions)}" class="empty-row">
+                        <td colspan="3">Chưa có hoa hồng nào. Hãy chia sẻ link giới thiệu ngay!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<div id="copyToast" class="copy-toast">✓ Đã sao chép!</div>
+
+<script>
+function copyLink() {
+    const inp = document.getElementById('refLink');
+    inp.select(); inp.setSelectionRange(0,9999);
+    navigator.clipboard?.writeText(inp.value).catch(() => document.execCommand('copy'));
+    showToast();
+}
+function copyCode(el) {
+    navigator.clipboard?.writeText(el.textContent.trim()).catch(() => {});
+    showToast();
+}
+function showToast() {
+    const t = document.getElementById('copyToast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

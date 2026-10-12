@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Thống kê nâng cao — GS LUXURY Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <!-- PAGE TITLE -->
+    <div class="admin-page-title">
+        <i class="fas fa-chart-bar"></i> Thống kê nâng cao
+    </div>
+
+    <!-- BỘ LỌC THÁNG / NĂM -->
+    <div class="admin-card" style="margin-bottom:20px">
+        <form method="GET" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span style="font-weight:600;color:#1a1f2e;font-size:14px"><i class="fas fa-filter" style="color:#bfa15f"></i> Xem thống kê:</span>
+            <select name="month" class="form-control" style="width:135px">
+                <option th:each="i : ${#numbers.sequence(1,12)}"
+                        th:value="${i}"
+                        th:text="${'Tháng ' + i}"
+                        th:selected="${i == month}"></option>
+            </select>
+            <select name="year" class="form-control" style="width:105px">
+                <option th:each="y : ${years}" th:value="${y}" th:text="${y}" th:selected="${y == year}"></option>
+            </select>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Xem</button>
+            <span style="font-size:13px;color:#aaa">Đang xem: <strong style="color:#1a1f2e" th:text="'Tháng ' + ${month} + ' / ' + ${year}"></strong></span>
+        </form>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px">
+        <!-- Doanh thu tháng -->
+        <div style="background:white;border-radius:14px;padding:18px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+            <div style="width:44px;height:44px;background:#fdf6e3;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px">💰</div>
+            <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Doanh thu tháng</div>
+            <div style="font-size:22px;font-weight:800;color:#8a6500"
+                 th:text="${#numbers.formatDecimal(revThisMonth / 1000000.0, 1, 1)} + 'M đ'">0M đ</div>
+            <div th:if="${revChange != null}" style="font-size:11px;margin-top:4px"
+                 th:style="${revChange >= 0} ? 'color:#27ae60' : 'color:#e74c3c'"
+                 th:text="${(revChange >= 0 ? '▲ ' : '▼ ') + #numbers.formatDecimal(revChange < 0 ? -revChange : revChange, 1, 1) + '% so với tháng trước'}"></div>
+        </div>
+        <!-- Đơn hàng tháng -->
+        <div style="background:white;border-radius:14px;padding:18px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+            <div style="width:44px;height:44px;background:#eaf4fd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px">📦</div>
+            <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Đơn hàng tháng</div>
+            <div style="font-size:22px;font-weight:800;color:#1a5276" th:text="${ordThisMonth} + ' đơn'">0 đơn</div>
+            <div th:if="${ordChange != null}" style="font-size:11px;margin-top:4px"
+                 th:style="${ordChange >= 0} ? 'color:#27ae60' : 'color:#e74c3c'"
+                 th:text="${(ordChange >= 0 ? '▲ ' : '▼ ') + #numbers.formatDecimal(ordChange < 0 ? -ordChange : ordChange, 1, 1) + '% so với tháng trước'}"></div>
+        </div>
+        <!-- Tỷ lệ hủy -->
+        <div style="background:white;border-radius:14px;padding:18px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+            <div style="width:44px;height:44px;background:#fdeaea;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px">❌</div>
+            <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Tỷ lệ hủy</div>
+            <div style="font-size:22px;font-weight:800;color:#922b21" th:text="${cancelRate} + '%'">0%</div>
+        </div>
+        <!-- Khách hàng mới -->
+        <div style="background:white;border-radius:14px;padding:18px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+            <div style="width:44px;height:44px;background:#eafaf1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px">👤</div>
+            <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Khách hàng mới</div>
+            <div style="font-size:22px;font-weight:800;color:#1e8449" th:text="${newUsers} + ' người'">0 người</div>
+        </div>
+    </div>
+
+    <!-- BIỂU ĐỒ ROW 1: Daily Revenue + Payment Method -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:20px">
+        <div class="admin-card">
+            <div class="card-title" style="margin-bottom:16px">
+                <i class="fas fa-chart-bar"></i>
+                Doanh thu từng ngày —
+                <span th:text="'Tháng ' + ${month} + '/' + ${year}"></span>
+            </div>
+            <canvas id="dailyChart" height="110"></canvas>
+        </div>
+        <div class="admin-card">
+            <div class="card-title" style="margin-bottom:16px">
+                <i class="fas fa-credit-card"></i> Phương thức thanh toán
+            </div>
+            <canvas id="pmChart" height="180"></canvas>
+            <div id="pmLegend" style="margin-top:12px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center"></div>
+        </div>
+    </div>
+
+    <!-- BIỂU ĐỒ ROW 2: Yearly Revenue + Top Products -->
+    <div style="display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:20px">
+        <div class="admin-card">
+            <div class="card-title" style="margin-bottom:16px">
+                <i class="fas fa-chart-line"></i>
+                Doanh thu 12 tháng năm <span th:text="${year}"></span>
+            </div>
+            <canvas id="yearChart" height="100"></canvas>
+        </div>
+        <div class="admin-card">
+            <div class="card-title" style="margin-bottom:14px">
+                <i class="fas fa-fire"></i>
+                Top sản phẩm bán chạy — Tháng <span th:text="${month}"></span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(topProducts)}" style="text-align:center;color:#aaa;padding:20px;font-size:13px">
+                Chưa có dữ liệu tháng này
+            </div>
+
+            <div th:each="p, iterStat : ${topProducts}" style="margin-bottom:14px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+                    <div th:with="rank=${iterStat.index + 1}"
+                         th:style="${rank==1} ? 'width:24px;height:24px;border-radius:50%;background:#ffd700;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#7d5a00;flex-shrink:0' :
+                                 (${rank==2} ? 'width:24px;height:24px;border-radius:50%;background:#c0c0c0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#555;flex-shrink:0' :
+                                 (${rank==3} ? 'width:24px;height:24px;border-radius:50%;background:#cd7f32;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0' :
+                                       'width:24px;height:24px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#888;flex-shrink:0'))"
+                         th:text="${iterStat.index + 1}">1</div>
+                    <div style="flex:1;font-size:13px;font-weight:600;color:#1a1f2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+                         th:text="${p.product_name != null ? p.product_name : p.name}">SP</div>
+                    <div style="font-size:12px;font-weight:700;color:#e74c3c;white-space:nowrap"
+                         th:text="${p.qty} + ' sp'">0 sp</div>
+                </div>
+                <div style="background:#f0f0f0;border-radius:4px;height:5px">
+                    <div th:style="'background:linear-gradient(90deg,#bfa15f,#d4b870);height:5px;border-radius:4px;width:' + ${topMaxQty > 0 ? #numbers.formatDecimal((p.qty * 100.0 / topMaxQty), 1, 0) : 0} + '%'"></div>
+                </div>
+                <div style="font-size:11px;color:#aaa;margin-top:3px"
+                     th:text="${#numbers.formatInteger(p.revenue, 1, 'COMMA')} + 'đ doanh thu'"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart data from server -->
+<script th:inline="javascript">
+/*<![CDATA[*/
+const dailyLabels  = /*[[${dailyLabels}]]*/  [];
+const dailyValues  = /*[[${dailyValues}]]*/  [];
+const yearlyValues = /*[[${yearlyValues}]]*/[];
+const pmLabels     = /*[[${pmLabels}]]*/     [];
+const pmValues     = /*[[${pmValues}]]*/     [];
+const pmColors     = /*[[${pmColors}]]*/     [];
+
+// ── Biểu đồ doanh thu từng ngày ──────────────────────────────────────
+new Chart(document.getElementById('dailyChart'), {
+    type: 'bar',
+    data: {
+        labels: dailyLabels,
+        datasets: [{
+            label: 'Doanh thu',
+            data: dailyValues,
+            backgroundColor: 'rgba(191,161,95,0.2)',
+            borderColor: '#bfa15f',
+            borderWidth: 1.5,
+            borderRadius: 4
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { callback: v => (v/1000000).toFixed(1)+'M', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+            x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+        }
+    }
+});
+
+// ── Biểu đồ phương thức thanh toán ──────────────────────────────────
+if (pmValues.length > 0) {
+    new Chart(document.getElementById('pmChart'), {
+        type: 'doughnut',
+        data: {
+            labels: pmLabels,
+            datasets: [{ data: pmValues, backgroundColor: pmColors, borderWidth: 0, hoverOffset: 4 }]
+        },
+        options: {
+            cutout: '60%',
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 8, boxWidth: 10 } } }
+        }
+    });
+} else {
+    document.getElementById('pmChart').closest('.admin-card').querySelector('canvas').insertAdjacentHTML(
+        'afterend', '<p style="text-align:center;color:#aaa;font-size:13px;padding:20px">Chưa có đơn hàng tháng này</p>');
+}
+
+// ── Biểu đồ doanh thu 12 tháng ───────────────────────────────────────
+new Chart(document.getElementById('yearChart'), {
+    type: 'line',
+    data: {
+        labels: ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'],
+        datasets: [{
+            label: 'Doanh thu',
+            data: yearlyValues,
+            borderColor: '#bfa15f',
+            backgroundColor: 'rgba(191,161,95,0.08)',
+            borderWidth: 2,
+            pointBackgroundColor: '#bfa15f',
+            pointRadius: 4,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { callback: v => (v/1000000).toFixed(1)+'M', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+            x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+        }
+    }
+});
+/*]]>*/
+</script>
+
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title th:text="${product == null ? 'Thêm sản phẩm' : 'Sửa sản phẩm'} + ' — GS LUXURY Admin'">Sản phẩm</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
+        <a href="/admin_products.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i></a>
+        <div class="admin-page-title" style="margin:0">
+            <i th:classappend="${product == null} ? 'fas fa-plus-circle' : 'fas fa-edit'" class="fas"></i>
+            <span th:text="${product == null ? 'Thêm sản phẩm mới' : 'Sửa sản phẩm: ' + product.name}">Sản phẩm</span>
+        </div>
+    </div>
+
+    <!-- Thông báo lỗi -->
+    <div th:if="${not #lists.isEmpty(errors)}" class="alert alert-danger">
+        <div th:each="err : ${errors}" th:text="${err}"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:start">
+
+        <!-- MAIN FORM -->
+        <form method="post" enctype="multipart/form-data"
+              th:action="${product == null ? '/admin_add_product.php' : '/admin_edit_product.php'}">
+            <input th:if="${product != null}" type="hidden" name="id" th:value="${product.id}">
+
+            <div class="admin-card" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:16px"><i class="fas fa-info-circle"></i> Thông tin cơ bản</div>
+
+                <div style="margin-bottom:14px">
+                    <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Tên sản phẩm *</label>
+                    <input name="name" class="form-control" style="width:100%;box-sizing:border-box"
+                           placeholder="VD: Sofa da cao cấp 3 chỗ"
+                           th:value="${product?.name}" required>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Giá bán (đ) *</label>
+                        <input type="number" name="price" class="form-control" style="width:100%;box-sizing:border-box"
+                               placeholder="5000000" min="0" th:value="${product?.price}" required>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Giá gốc/cũ (đ)</label>
+                        <input type="number" name="old_price" class="form-control" style="width:100%;box-sizing:border-box"
+                               placeholder="Để trống nếu không giảm giá" min="0" th:value="${product?.old_price}">
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Danh mục *</label>
+                        <select name="category_id" class="form-control" style="width:100%;box-sizing:border-box" required>
+                            <option value="">— Chọn danh mục —</option>
+                            <option th:each="c : ${categories}"
+                                    th:value="${c.id}" th:text="${c.name}"
+                                    th:selected="${product != null and product.category_id == c.id}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Số lượng tồn kho</label>
+                        <input type="number" name="quantity" class="form-control" style="width:100%;box-sizing:border-box"
+                               min="0" th:value="${product?.quantity ?: 0}">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:14px">
+                    <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Mô tả sản phẩm</label>
+                    <textarea name="description" class="form-control" style="width:100%;box-sizing:border-box;height:100px;resize:vertical"
+                              placeholder="Mô tả sản phẩm, đặc điểm nổi bật..."
+                              th:text="${product?.description}"></textarea>
+                </div>
+            </div>
+
+            <div class="admin-card" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:16px"><i class="fas fa-ruler"></i> Thông số kỹ thuật</div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Chất liệu</label>
+                        <input name="material" class="form-control" style="width:100%;box-sizing:border-box"
+                               placeholder="VD: Gỗ Sồi Nga" th:value="${product?.material}">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Kích thước</label>
+                        <input name="dimensions" class="form-control" style="width:100%;box-sizing:border-box"
+                               placeholder="VD: 1.8m x 2m" th:value="${product?.dimensions}">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Bảo hành</label>
+                        <input name="warranty" class="form-control" style="width:100%;box-sizing:border-box"
+                               placeholder="VD: 24 tháng" th:value="${product?.warranty}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-title" style="margin-bottom:16px"><i class="fas fa-image"></i> Hình ảnh sản phẩm</div>
+
+                <!-- Preview ảnh hiện tại -->
+                <div th:if="${product != null and product.image_url != null and !product.image_url.isEmpty()}"
+                     style="margin-bottom:14px">
+                    <div style="font-size:12px;color:#999;margin-bottom:6px">Ảnh hiện tại:</div>
+                    <img th:src="${product.image_url}"
+                         style="width:120px;height:120px;object-fit:cover;border-radius:10px;border:2px solid #f0f0f0">
+                </div>
+
+                <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">
+                    <span th:text="${product == null ? 'Chọn ảnh' : 'Thay ảnh (để trống giữ ảnh cũ)'}">Ảnh</span>
+                </label>
+                <input type="file" name="image" accept="image/*" class="form-control" style="width:100%;box-sizing:border-box"
+                       onchange="previewImg(this)">
+                <div id="imgPreview" style="margin-top:10px"></div>
+
+                <div style="margin-top:16px;display:flex;gap:12px">
+                    <button type="submit" class="btn btn-primary" style="flex:1">
+                        <i class="fas fa-save"></i>
+                        <span th:text="${product == null ? 'Thêm sản phẩm' : 'Lưu thay đổi'}">Lưu sản phẩm</span>
+                    </button>
+                    <a href="/admin_products.php" class="btn btn-secondary">Hủy</a>
+                </div>
+            </div>
+        </form>
+
+        <!-- SIDEBAR INFO -->
+        <div>
+            <div class="admin-card" style="background:linear-gradient(135deg,#1a1f2e,#2d3454);color:white;border:none">
+                <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#d4b870"><i class="fas fa-lightbulb"></i> Lưu ý</div>
+                <ul style="font-size:13px;color:#b0c0d8;line-height:1.8;padding-left:18px;margin:0">
+                    <li>Tên sản phẩm nên rõ ràng, dễ nhớ</li>
+                    <li>Ảnh nên có tỉ lệ vuông (1:1) để hiển thị đẹp</li>
+                    <li>Nhập giá gốc để hiển thị giảm giá trên sản phẩm</li>
+                    <li>Điền đầy đủ thông số để hiển thị tab chi tiết</li>
+                    <li>Số lượng = 0 sẽ hiển thị "Hết hàng"</li>
+                </ul>
+            </div>
+            <div class="admin-card" style="background:linear-gradient(135deg,#1a1f2e,#2d3454);color:white;border:none;margin-top:16px">
+                <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#d4b870"><i class="fas fa-link"></i> Thao tác nhanh</div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <a href="/admin_products.php" class="btn btn-secondary" style="justify-content:center"><i class="fas fa-list"></i> Xem danh sách sản phẩm</a>
+                    <a href="/promotion.php" target="_blank" class="btn btn-secondary" style="justify-content:center"><i class="fas fa-tag"></i> Xem khuyến mãi</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function previewImg(input) {
+    const prev = document.getElementById('imgPreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            prev.innerHTML = `<img src="${e.target.result}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:2px solid #bfa15f;margin-top:6px">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        prev.innerHTML = '';
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Đánh giá sản phẩm — GS LUXURY Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <th:block th:replace="~{admin_fragments :: adminStyle}"></th:block>
+</head>
+<body>
+<aside th:replace="~{admin_fragments :: sidebar}"></aside>
+
+<div class="admin-wrap">
+    <div class="admin-page-title"><i class="fas fa-star"></i> Quản lý Đánh giá
+        <span style="font-size:13px;color:#aaa;font-weight:400;margin-left:6px" th:text="'(' + ${#lists.size(reviews)} + ' đánh giá)'"></span>
+    </div>
+
+    <div class="admin-card" style="padding:14px 20px;margin-bottom:16px">
+        <input type="text" id="searchInput" class="form-control" style="width:100%;box-sizing:border-box"
+               placeholder="🔍 Tìm kiếm theo người dùng, sản phẩm, nội dung..." oninput="filterTable()">
+    </div>
+
+    <div class="admin-card" style="padding:0;overflow:hidden">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Người dùng</th>
+                    <th>Sản phẩm</th>
+                    <th>Đánh giá</th>
+                    <th>Nội dung</th>
+                    <th>Ngày</th>
+                    <th style="width:80px">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="reviewTable">
+                <tr th:each="r : ${reviews}">
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#bfa15f,#d4b870);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px;flex-shrink:0"
+                                 th:text="${r.username != null ? r.username.substring(0,1).toUpperCase() : '?'}">U</div>
+                            <span style="font-weight:600;color:#1a1f2e" th:text="${r.username}"></span>
+                        </div>
+                    </td>
+                    <td style="font-size:13px;color:#555" th:text="${r.product_name ?: '—'}"></td>
+                    <td>
+                        <div style="display:flex;gap:2px">
+                            <span th:each="i : ${#numbers.sequence(1,5)}"
+                                  th:style="${i <= r.rating} ? 'color:#f39c12;font-size:14px' : 'color:#ddd;font-size:14px'">★</span>
+                        </div>
+                        <div style="font-size:11px;color:#aaa;margin-top:1px" th:text="${r.rating} + '/5'"></div>
+                    </td>
+                    <td style="max-width:280px">
+                        <div style="font-size:13px;color:#555;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical"
+                             th:text="${r.content}"></div>
+                    </td>
+                    <td style="font-size:12px;color:#aaa;white-space:nowrap"
+                        th:text="${r.created_at != null ? #dates.format(r.created_at, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+                    <td>
+                        <form method="post" action="/admin_reviews.php">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" th:value="${r.id}">
+                            <button type="submit" class="btn btn-danger" style="font-size:12px;padding:5px 10px"
+                                    onclick="return confirm('Xóa đánh giá này?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(reviews)}">
+                    <td colspan="6" style="text-align:center;color:#aaa;padding:30px">Chưa có đánh giá nào</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const kw = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#reviewTable tr').forEach(tr => {
+        tr.style.display = tr.textContent.toLowerCase().includes(kw) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

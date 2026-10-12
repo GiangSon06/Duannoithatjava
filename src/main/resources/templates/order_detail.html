@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head('Chi tiết đơn hàng')}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<style>
+.od-wrap { max-width:960px; margin:35px auto; padding:0 18px; }
+.od-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:10px; }
+.od-header h1 { font-size:22px; font-weight:700; color:#1a1f2e; margin:0; }
+.od-print-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#f0f0f0; color:#333; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; transition:.2s; }
+.od-print-btn:hover { background:#e0e0e0; }
+
+/* Status badge */
+.status-badge { display:inline-block; padding:5px 14px; border-radius:20px; font-size:13px; font-weight:700; }
+.status-cho   { background:#fff3cd; color:#856404; }
+.status-dang  { background:#cff4fc; color:#055160; }
+.status-giao  { background:#d1e7dd; color:#0a3622; }
+.status-huy   { background:#f8d7da; color:#842029; }
+
+/* Delivery banner */
+.delivery-banner {
+    background:linear-gradient(135deg,#f0f9ff,#e8f5e9);
+    border:1px solid #b2dfdb; border-radius:12px; padding:16px 20px;
+    display:flex; align-items:center; gap:16px; margin-bottom:20px; flex-wrap:wrap;
+}
+.delivery-icon { font-size:28px; flex-shrink:0; }
+.delivery-info-text { flex:1; }
+.delivery-label { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
+.delivery-date { font-size:17px; font-weight:700; color:#1a1f2e; }
+.delivery-note { font-size:12px; color:#777; margin-top:2px; }
+.delivery-km { background:#e8f5e9; border:1px solid #b2dfdb; border-radius:10px; padding:8px 14px; text-align:center; flex-shrink:0; }
+
+/* Cards */
+.od-card { background:white; border:1px solid #eee; border-radius:12px; padding:20px; margin-bottom:18px; }
+.od-card-title { display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; color:#1a1f2e; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #f0f0f0; }
+.od-card-title i { color:#bfa15f; }
+
+/* Timeline */
+.timeline { display:flex; align-items:flex-start; position:relative; padding:10px 0; overflow-x:auto; gap:0; }
+.timeline-line { position:absolute; top:28px; left:0; height:3px; background:#e0e0e0; width:100%; z-index:0; border-radius:2px; }
+.timeline-progress { position:absolute; top:28px; left:0; height:3px; background:linear-gradient(90deg,#27ae60,#2ecc71); z-index:1; border-radius:2px; transition:width .5s; }
+.tl-step { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; z-index:2; min-width:80px; }
+.tl-icon { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; border:3px solid #e0e0e0; background:white; transition:.3s; }
+.tl-step.done .tl-icon   { background:#27ae60; color:white; border-color:#27ae60; }
+.tl-step.active .tl-icon { background:#2c3e50; color:white; border-color:#2c3e50; box-shadow:0 0 0 4px rgba(44,62,80,0.15); }
+.tl-step.pending .tl-icon { background:white; color:#ccc; border-color:#e0e0e0; }
+.tl-step.cancel .tl-icon  { background:#e74c3c; color:white; border-color:#e74c3c; }
+.tl-label { margin-top:8px; font-size:11px; text-align:center; color:#999; font-weight:600; line-height:1.3; }
+.tl-step.done .tl-label, .tl-step.active .tl-label { color:#1a1f2e; }
+
+/* History log */
+.history-log { margin-top:14px; border-top:1px solid #f0f0f0; padding-top:12px; }
+.history-title { font-size:13px; font-weight:700; color:#555; margin-bottom:8px; }
+.history-item { display:flex; gap:10px; margin-bottom:10px; }
+.h-dot { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; margin-top:2px; }
+.h-dot.done   { background:#27ae60; color:white; }
+.h-dot.cancel { background:#e74c3c; color:white; }
+.h-status { font-size:13px; font-weight:700; color:#1a1f2e; }
+.h-note   { font-size:12px; color:#777; margin-top:2px; }
+.h-time   { font-size:11px; color:#aaa; margin-top:2px; }
+
+/* Info grid */
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px; }
+@media(max-width:640px){ .info-grid { grid-template-columns:1fr; } }
+.info-card { background:white; border:1px solid #eee; border-radius:12px; padding:18px; }
+.info-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #fafafa; font-size:13px; flex-wrap:wrap; gap:6px; }
+.info-row .lbl { color:#888; }
+.info-row .val { font-weight:600; color:#1a1f2e; text-align:right; }
+
+/* Products */
+.product-row { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid #f5f5f5; }
+.product-img { width:58px; height:58px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+.product-name { flex:1; font-size:13px; font-weight:600; color:#1a1f2e; }
+.product-qty  { font-size:13px; color:#888; width:40px; text-align:center; }
+.product-price { font-size:14px; font-weight:700; color:#e74c3c; }
+.total-row { display:flex; justify-content:space-between; padding:14px 0 0; border-top:2px solid #f0f0f0; margin-top:8px; }
+.total-label { font-size:15px; font-weight:700; color:#1a1f2e; }
+.total-amount { font-size:18px; font-weight:700; color:#e74c3c; }
+
+/* Cancel button */
+.btn-cancel-order { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; background:#fff0f0; color:#e74c3c; border:1.5px solid #e74c3c; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; cursor:pointer; transition:.2s; }
+.btn-cancel-order:hover { background:#e74c3c; color:white; }
+</style>
+
+<div class="od-wrap">
+    <!-- HEADER -->
+    <div class="od-header">
+        <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px" th:if="${isAdmin}">
+                <a href="/admin_orders.php" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#f0f2f5;color:#475569;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600">
+                    <i class="fas fa-arrow-left"></i> Quay lại Quản lý đơn hàng
+                </a>
+            </div>
+            <h1 th:text="'Đơn hàng #' + ${order.id}">Đơn hàng</h1>
+            <div style="margin-top:6px;">
+                <span th:with="st=${order.status}"
+                      th:class="${st=='Chờ xử lý'?'status-badge status-cho':
+                                  st=='Đang giao'?'status-badge status-dang':
+                                  st=='Đã giao hàng'?'status-badge status-giao':'status-badge status-huy'}"
+                      th:text="${st}">Trạng thái</span>
+                <span style="font-size:13px;color:#aaa;margin-left:10px;"
+                      th:text="'Đặt lúc ' + ${order.created_at}"></span>
+            </div>
+        </div>
+        <a th:href="@{/print_order.php(id=${order.id})}" class="od-print-btn" target="_blank">
+            <i class="fas fa-print"></i> In đơn hàng
+        </a>
+    </div>
+
+    <!-- DELIVERY BANNER -->
+    <div th:if="${order.estimated_delivery != null}" class="delivery-banner">
+        <div class="delivery-icon">🚚</div>
+        <div class="delivery-info-text">
+            <div class="delivery-label">Dự kiến giao hàng</div>
+            <div class="delivery-date" th:text="${estimatedDisplay}">--</div>
+            <div class="delivery-note" th:if="${order.delivery_note}" th:text="${order.delivery_note}"></div>
+        </div>
+        <div class="delivery-km" th:if="${deliveryKm != null and deliveryKm > 0}">
+            <div style="font-size:15px;font-weight:700;color:#27ae60;" th:text="${deliveryKm} + ' km'">-- km</div>
+            <div style="font-size:10px;color:#888;margin-top:1px;">từ kho HN</div>
+        </div>
+        <div th:if="${order.status == 'Đã giao hàng'}"
+             style="font-size:13px;font-weight:700;color:#16a34a;flex-shrink:0;">
+            <i class="fas fa-check-circle"></i> Đã giao thành công
+        </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="od-card">
+        <div class="od-card-title"><i class="fas fa-route"></i> Theo dõi đơn hàng</div>
+        <div th:if="${order.status != 'Đã hủy'}">
+            <div class="timeline" id="timeline">
+                <div class="timeline-line"></div>
+                <div class="timeline-progress" id="tl-progress" style="width:0%"></div>
+                <div class="tl-step" id="step0">
+                    <div class="tl-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="tl-label">Chờ xử lý</div>
+                </div>
+                <div class="tl-step" id="step1">
+                    <div class="tl-icon"><i class="fas fa-cog"></i></div>
+                    <div class="tl-label">Đang chuẩn bị</div>
+                </div>
+                <div class="tl-step" id="step2">
+                    <div class="tl-icon"><i class="fas fa-truck"></i></div>
+                    <div class="tl-label">Đang giao</div>
+                </div>
+                <div class="tl-step" id="step3">
+                    <div class="tl-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="tl-label">Đã giao hàng</div>
+                </div>
+            </div>
+
+            <!-- History log -->
+            <div class="history-log" th:if="${!#lists.isEmpty(history)}">
+                <div class="history-title"><i class="fas fa-history"></i> Lịch sử cập nhật</div>
+                <div class="history-item" th:each="h : ${history}">
+                    <div th:class="${h.status == 'Đã hủy' ? 'h-dot cancel' : 'h-dot done'}">
+                        <i th:class="${h.status == 'Đã hủy' ? 'fas fa-times' : 'fas fa-check'}"></i>
+                    </div>
+                    <div>
+                        <div class="h-status" th:text="${h.status}"></div>
+                        <div class="h-note" th:if="${h.note}" th:text="${h.note}"></div>
+                        <div class="h-time"><i class="fas fa-clock" style="font-size:10px"></i>
+                            <span th:text="${h.created_at}"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cancelled state -->
+        <div th:if="${order.status == 'Đã hủy'}" style="text-align:center;padding:20px 0;">
+            <div style="width:64px;height:64px;background:#fdeaea;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:26px;color:#e74c3c;margin-bottom:12px;">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div style="font-size:16px;font-weight:700;color:#e74c3c;">Đơn hàng đã bị hủy</div>
+            <div style="font-size:13px;color:#aaa;margin-top:4px;">Đơn hàng này đã được hủy và không thể theo dõi</div>
+        </div>
+    </div>
+
+    <!-- THÔNG TIN GIAO HÀNG + THANH TOÁN -->
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="od-card-title"><i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng</div>
+            <div class="info-row">
+                <span class="lbl">Người nhận</span>
+                <span class="val" th:text="${order.fullname}"></span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Điện thoại</span>
+                <span class="val" th:text="${order.phone}"></span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Địa chỉ</span>
+                <span class="val" th:text="${order.address}" style="max-width:200px;"></span>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="od-card-title"><i class="fas fa-credit-card"></i> Thông tin thanh toán</div>
+            <div class="info-row">
+                <span class="lbl">Phương thức</span>
+                <span class="val" th:text="${order.payment_method == 'cod' ? 'Thanh toán COD' :
+                                             order.payment_method == 'banking' ? 'Chuyển khoản' : 'Ví MoMo'}"></span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Mã đơn hàng</span>
+                <span class="val" style="color:#bfa15f;" th:text="'#' + ${order.id}"></span>
+            </div>
+            <div class="info-row" th:if="${order.voucher_code}">
+                <span class="lbl">Voucher</span>
+                <span class="val" style="color:#27ae60;" th:text="${order.voucher_code}"></span>
+            </div>
+            <div class="info-row" th:if="${order.discount_amount != null and order.discount_amount > 0}">
+                <span class="lbl">Giảm giá</span>
+                <span class="val" style="color:#27ae60;"
+                      th:text="'-' + ${#numbers.formatInteger(order.discount_amount, 1, 'COMMA')} + 'đ'"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SẢN PHẨM ĐÃ ĐẶT -->
+    <div class="od-card">
+        <div class="od-card-title"><i class="fas fa-box-open"></i> Sản phẩm đã đặt</div>
+        <div class="product-row" th:each="d : ${details}"
+             th:with="img=${(d['image_url'] != null and d['image_url'] != '') ? d['image_url'] : 'picture/no-image.svg'},
+                      subtotal=${d.price * d.quantity}">
+            <img th:src="@{${img}}" class="product-img"
+                 onerror="this.onerror=null;this.src='picture/no-image.svg'">
+            <div class="product-name" th:text="${d.product_name}">Tên SP</div>
+            <div class="product-qty" th:text="'x' + ${d.quantity}">x1</div>
+            <div class="product-price"
+                 th:text="${#numbers.formatInteger(subtotal, 1, 'COMMA')} + 'đ'">0đ</div>
+        </div>
+        <div class="total-row">
+            <span class="total-label">Tổng cộng</span>
+            <span class="total-amount"
+                  th:text="${#numbers.formatInteger(order.total_money, 1, 'COMMA')} + 'đ'">0đ</span>
+        </div>
+    </div>
+
+    <!-- NÚT HỦY -->
+    <div th:if="${!isAdmin and order.status == 'Chờ xử lý'}" style="text-align:center;margin-top:8px;">
+        <form method="post" action="/cancel_order.php" style="display:inline;">
+            <input type="hidden" name="order_id" th:value="${order.id}">
+            <button type="submit" class="btn-cancel-order"
+                    onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này không?')">
+                <i class="fas fa-times-circle"></i> Hủy đơn hàng
+            </button>
+        </form>
+        <div style="font-size:12px;color:#aaa;margin-top:6px;">Chỉ có thể hủy khi đơn đang ở trạng thái "Chờ xử lý"</div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+// Timeline animation
+const statusMap = {
+    'Chờ xử lý': 0,
+    'Đang chuẩn bị': 1,
+    'Đang giao': 2,
+    'Đã giao hàng': 3
+};
+const currentStatus = /*[[${order.status}]]*/ 'Chờ xử lý';
+const currentStep = statusMap[currentStatus] ?? 0;
+const pct = [0, 33, 66, 100];
+
+document.addEventListener('DOMContentLoaded', function () {
+    const progress = document.getElementById('tl-progress');
+    if (progress) progress.style.width = 'calc(' + (pct[currentStep] || 0) + '% - 10px)';
+
+    for (let i = 0; i <= 3; i++) {
+        const el = document.getElementById('step' + i);
+        if (!el) continue;
+        el.classList.remove('done','active','pending');
+        if (i < currentStep) el.classList.add('done');
+        else if (i === currentStep) { el.classList.add('done'); el.classList.add('active'); }
+        else el.classList.add('pending');
+    }
+});
+</script>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

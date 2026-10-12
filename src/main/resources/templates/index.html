@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:replace="~{fragments :: head(${pageTitle})}"></th:block></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<section class="banner">
+    <div class="slides">
+        <img src="picture/slide2.jpg" alt="Banner 1" style="width:100%; display:block;" />
+    </div>
+</section>
+
+<section class="categories container">
+    <div class="categories-header">
+        <h2>Danh mục sản phẩm</h2>
+        <div class="category-list">
+            <button class="cat-item active" onclick="filterCategory('all')">Tất cả</button>
+            <button class="cat-item" onclick="filterCategory('3')">Phòng khách</button>
+            <button class="cat-item" onclick="filterCategory('1')">Phòng ngủ</button>
+            <button class="cat-item" onclick="filterCategory('2')">Phòng ăn</button>
+            <button class="cat-item" onclick="filterCategory('4')">Học tập</button>
+        </div>
+    </div>
+</section>
+
+<section class="products container">
+    <h2>Sản phẩm nổi bật</h2>
+    <div class="product-list">
+        <div class="product-card" th:each="product : ${products}"
+             th:attr="data-id=${product.id},data-name=${product.name},data-price=${product.price},data-img=${product.image_url},data-category=${product.category_id}">
+            <a th:href="@{/product_detail.php(id=${product.id})}" class="product-link">
+                <img th:src="${product.image_url}" th:alt="${product.name}" style="width:100%;height:178px;object-fit:cover;"
+                     onerror="this.onerror=null;this.src='https://placehold.co/400x400/f7f7f7/aaaaaa?text=No+Image'" />
+                <h3 th:text="${product.name}">Tên sản phẩm</h3>
+            </a>
+
+            <p class="price" th:text="${#numbers.formatDecimal(product.price, 1, 'POINT', 0, 'COMMA')} + 'đ'">0đ</p>
+            <div class="product-card-btns">
+                <button type="button" class="btn-add-cart" onclick="addToCart(this)">Thêm vào giỏ</button>
+                <button type="button" class="btn-buy-now" onclick="buyNow(this)">Mua ngay</button>
+            </div>
+        </div>
+        <p th:if="${#lists.isEmpty(products)}" style="grid-column: 1 / -1; text-align: center; color: #777;">Hiện chưa có sản phẩm nổi bật nào.</p>
+    </div>
+</section>
+
+<section class="reviews" style="background: #f9f9f9; padding: 40px 0;">
+    <h2 style="text-align:center; margin-bottom:10px; color: #2c3e50;">Khách hàng nói gì?</h2>
+    <p style="text-align:center; color:#888; margin-bottom:30px; font-size:14px;">⭐ Đánh giá 5 sao nổi bật từ khách hàng</p>
+
+    <style>
+        /* CSS cho ngôi sao */
+        .stars {
+            display: inline-block;
+            font-size: 20px;
+            color: #FFC107; /* Màu vàng cho ngôi sao */
+        }
+        .stars .fa-star {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .review-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 320px;
+            border: 1px solid #ebeef2;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s;
+        }
+        .review-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 36px rgba(0,0,0,0.08);
+            border-color: #f1c40f;
+        }
+        /* CSS để ẩn input radio */
+        .rating-input {
+            display: none;
+        }
+        /* CSS cho trạng thái hover/checked của ngôi sao trong form */
+        .rating-group > label {
+            float: right;
+            cursor: pointer;
+            color: #ccc; /* Màu xám mặc định */
+            transition: color 0.2s;
+        }
+        .rating-group > label:before {
+            content: '\f005'; /* Mã Unicode của Font Awesome Star */
+            font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free';
+            font-weight: 900;
+            padding: 2px;
+        }
+        .rating-group > input:checked ~ label, /* Khi input được chọn */
+        .rating-group:not(:checked) > label:hover, /* Khi hover lên sao */
+        .rating-group:not(:checked) > label:hover ~ label { /* Khi hover lên và các sao trước đó */
+            color: #FFC107;
+        }
+    </style>
+
+    <div class="review-list" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <div class="review-card" th:each="rev : ${reviews}">
+            <div>
+                <div class="stars">
+                    <th:block th:each="i : ${#numbers.sequence(1,5)}">
+                        <i th:if="${i le rev.rating}" class="fas fa-star"></i>
+                        <i th:unless="${i le rev.rating}" class="far fa-star" style="color:#ccc;"></i>
+                    </th:block>
+                </div>
+                <p style="font-style:italic; margin-top: 10px; color:#444; line-height:1.5;" th:text="|&quot;${rev.content}&quot;|">"nội dung"</p>
+            </div>
+            <div>
+                <div th:if="${rev.product_name != null}" style="font-size:12px; color:#bfa15f; margin-top:10px; font-weight:600;">
+                    <i class="fas fa-couch"></i> <span th:text="${rev.product_name}">Sản phẩm</span>
+                </div>
+                <strong style="display:block; margin-top:8px; text-align:right; font-size:13px; color:#666;" th:text="'- ' + ${rev.username}">- user</strong>
+            </div>
+        </div>
+        <p th:if="${#lists.isEmpty(reviews)}" style="text-align: center; width: 100%; color:#888;">Chưa có đánh giá 5 sao nào.</p>
+    </div>
+
+    <div style="max-width: 600px; margin: 40px auto; text-align: center;">
+        <th:block th:if="${loggedIn}">
+            <h3 style="color: #333;">Viết đánh giá của bạn</h3>
+
+            <form id="reviewForm" style="margin-top: 15px;">
+
+                <div class="rating-group" style="direction: rtl; display: inline-block;">
+                    <input type="radio" id="star5" name="rating" class="rating-input" value="5" required>
+                    <label for="star5" title="Tuyệt vời - 5 sao"></label>
+                    <input type="radio" id="star4" name="rating" class="rating-input" value="4">
+                    <label for="star4" title="Tốt - 4 sao"></label>
+                    <input type="radio" id="star3" name="rating" class="rating-input" value="3">
+                    <label for="star3" title="Bình thường - 3 sao"></label>
+                    <input type="radio" id="star2" name="rating" class="rating-input" value="2">
+                    <label for="star2" title="Kém - 2 sao"></label>
+                    <input type="radio" id="star1" name="rating" class="rating-input" value="1">
+                    <label for="star1" title="Rất tệ - 1 sao"></label>
+                    <p style="direction: ltr; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #555;">Chọn số sao:</p>
+                </div>
+                <textarea name="content" required placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."
+                          style="width: 100%; height: 80px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-top: 10px;"></textarea>
+
+                <button type="submit" id="submitReviewBtn" style="margin-top: 10px; padding: 10px 20px; background: #bfa15f; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    Gửi đánh giá
+                </button>
+            </form>
+
+            <script th:inline="none">
+                document.getElementById('reviewForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const form = e.target;
+                    const content = form.elements['content'].value;
+                    const rating = form.elements['rating'].value; // Lấy giá trị sao
+
+                    if (!content || !rating) {
+                        alert('Vui lòng nhập nội dung và chọn số sao.');
+                        return;
+                    }
+
+                    const submitBtn = document.getElementById('submitReviewBtn');
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = 'Đang gửi...';
+
+                    fetch('process_review.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `content=${encodeURIComponent(content)}&rating=${encodeURIComponent(rating)}`
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert('Đánh giá của bạn đã được gửi thành công!');
+                                form.reset(); // Xóa form
+                                window.location.reload(); // Tải lại trang để thấy đánh giá mới
+                            } else {
+                                alert('Lỗi: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Lỗi khi gửi đánh giá:', error);
+                            alert('Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
+                        })
+                        .finally(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = 'Gửi đánh giá';
+                        });
+                });
+            </script>
+        </th:block>
+        <p th:unless="${loggedIn}"><i><a href="login.php" style="color: #bfa15f;">Đăng nhập</a> để viết đánh giá.</i></p>
+    </div>
+</section>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>
