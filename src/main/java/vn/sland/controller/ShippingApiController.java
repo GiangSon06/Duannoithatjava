@@ -32,11 +32,13 @@ public class ShippingApiController {
     }
 
     @PostMapping("/calculate-fee")
-    public Map<String, Object> calculateFee(@RequestParam int district_id,
+    public Map<String, Object> calculateFee(@RequestParam(required = false, defaultValue = "0") int province_id,
+                                           @RequestParam(required = false, defaultValue = "") String province_name,
+                                           @RequestParam int district_id,
                                            @RequestParam String ward_code,
                                            @RequestParam(defaultValue = "2000") int weight,
                                            @RequestParam(defaultValue = "0") long total) {
-        Map<String, Object> res = ghn.calculateShipping(district_id, ward_code, weight, total);
+        Map<String, Object> res = ghn.calculateShipping(district_id, ward_code, weight, total, province_name);
         if ("success".equals(res.get("status"))) {
             long ghnFee = WebUtil.longv(res.get("fee"));
             // Chính sách GS LUXURY: Miễn phí vận chuyển toàn quốc cho đơn từ 5 triệu

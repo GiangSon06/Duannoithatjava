@@ -369,9 +369,15 @@ function onWardChange(wardCode) {
 
 function calculateGhnFee(districtId, wardCode) {
     const feeDisp = document.getElementById('shipping_fee_display');
-    feeDisp.textContent = 'Đang tính phí GHN...';
+    feeDisp.textContent = 'Đang tính phí...';
+
+    const pSel = document.getElementById('province_select');
+    const pName = pSel.selectedIndex > 0 ? pSel.options[pSel.selectedIndex].text : '';
+    const provinceId = pSel.value;
 
     const fd = new FormData();
+    fd.append('province_id', provinceId);
+    fd.append('province_name', pName);
     fd.append('district_id', districtId);
     fd.append('ward_code', wardCode);
     fd.append('weight', 2000);
@@ -392,7 +398,7 @@ function calculateGhnFee(districtId, wardCode) {
                 if (res.leadtime_date) {
                     document.getElementById('dp_emoji').textContent = '🚛';
                     document.getElementById('dp_date').textContent = res.leadtime_date;
-                    document.getElementById('dp_note').textContent = (res.service_name || 'Giao Hàng Nhanh (GHN)') + (res.promo_note ? ' · ' + res.promo_note : '');
+                    document.getElementById('dp_note').textContent = (res.service_name || 'GS LUXURY Express') + (res.promo_note ? ' · ' + res.promo_note : '');
                     document.getElementById('delivery_preview').style.display = 'block';
                 }
             } else {
@@ -525,11 +531,11 @@ function submitOrder() {
         document.getElementById('phone').focus();
         return;
     }
-    if (!pVal || !dVal || !wVal) {
+    if ((!pVal || !dVal || !wVal) && !address) {
         alert('❌ Vui lòng chọn đầy đủ Tỉnh/Thành phố, Quận/Huyện và Phường/Xã!');
         return;
     }
-    if (!street) {
+    if (!street && !address) {
         alert('❌ Vui lòng nhập số nhà, tên đường cụ thể!');
         document.getElementById('street_input').focus();
         return;

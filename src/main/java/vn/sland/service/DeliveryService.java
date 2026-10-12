@@ -83,6 +83,10 @@ public class DeliveryService {
         PROVINCE_KM.put("Cà Mau",                   1782);
     }
 
+    public Map<String, Integer> getProvinceKmMap() {
+        return Collections.unmodifiableMap(PROVINCE_KM);
+    }
+
     public int kmForProvince(String provinceName) {
         if (provinceName == null || provinceName.isBlank()) return -1;
         String trimmed = provinceName.trim();
