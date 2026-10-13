@@ -77,4 +77,21 @@ public final class WebUtil {
     }
 
     public static String safe(String s) { return s == null ? "" : s.trim(); }
+
+    public static String resolveBaseUrl(jakarta.servlet.http.HttpServletRequest req, String fallback) {
+        if (req == null) return fallback;
+        String proto = req.getHeader("X-Forwarded-Proto");
+        if (proto == null || proto.isBlank()) {
+            proto = req.getScheme();
+        }
+        String host = req.getHeader("X-Forwarded-Host");
+        if (host == null || host.isBlank()) {
+            host = req.getHeader("Host");
+        }
+        if (host == null || host.isBlank()) {
+            return fallback;
+        }
+        String url = proto + "://" + host;
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
 }

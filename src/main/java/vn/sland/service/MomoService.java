@@ -48,21 +48,30 @@ public class MomoService {
         return accessKey != null && !accessKey.isBlank() && secretKey != null && !secretKey.isBlank();
     }
 
+    public String getRedirectUrl() { return redirectUrl; }
+    public String getIpnUrl() { return ipnUrl; }
+
     public Map<String, Object> createPayment(String orderId, long amount, String orderInfo, String extraData) {
+        return createPayment(orderId, amount, orderInfo, extraData, this.redirectUrl, this.ipnUrl);
+    }
+
+    public Map<String, Object> createPayment(String orderId, long amount, String orderInfo, String extraData, String customRedirectUrl, String customIpnUrl) {
         if (!configured()) {
             return Map.of("resultCode", 99, "message", "MoMo chưa được cấu hình MOMO_ACCESS_KEY/MOMO_SECRET_KEY");
         }
         try {
+            String targetRedirectUrl = (customRedirectUrl != null && !customRedirectUrl.isBlank()) ? customRedirectUrl : redirectUrl;
+            String targetIpnUrl = (customIpnUrl != null && !customIpnUrl.isBlank()) ? customIpnUrl : ipnUrl;
             String requestId = orderId + "-" + System.currentTimeMillis();
             String requestType = (defaultRequestType != null && !defaultRequestType.isBlank()) ? defaultRequestType : "payWithATM";
             String raw = "accessKey=" + accessKey +
                     "&amount=" + amount +
                     "&extraData=" + (extraData == null ? "" : extraData) +
-                    "&ipnUrl=" + ipnUrl +
+                    "&ipnUrl=" + targetIpnUrl +
                     "&orderId=" + orderId +
                     "&orderInfo=" + orderInfo +
                     "&partnerCode=" + partnerCode +
-                    "&redirectUrl=" + redirectUrl +
+                    "&redirectUrl=" + targetRedirectUrl +
                     "&requestId=" + requestId +
                     "&requestType=" + requestType;
             String sig = hmac(raw);
@@ -75,8 +84,8 @@ public class MomoService {
             b.put("amount", amount);
             b.put("orderId", orderId);
             b.put("orderInfo", orderInfo);
-            b.put("redirectUrl", redirectUrl);
-            b.put("ipnUrl", ipnUrl);
+            b.put("redirectUrl", targetRedirectUrl);
+            b.put("ipnUrl", targetIpnUrl);
             b.put("lang", "vi");
             b.put("requestType", requestType);
             b.put("autoCapture", true);

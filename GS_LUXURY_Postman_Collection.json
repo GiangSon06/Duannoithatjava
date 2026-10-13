@@ -1,0 +1,574 @@
+{
+  "info": {
+    "_postman_id": "c1f7a4d5-89b2-4d1a-8b1e-gsluxury2026",
+    "name": "GS LUXURY E-Commerce API Collection",
+    "description": "Bộ sưu tập kiểm thử API tự động cho hệ thống Thương mại điện tử Nội thất GS LUXURY.\nBao gồm 12 Test Cases bao phủ các nghiệp vụ cốt lõi: Shipping, Inventory, Voucher, Catalog, Reviews, AI Chat.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Shipping & Logistics APIs",
+      "item": [
+        {
+          "name": "TC_API_01: Lấy danh mục 63 Tỉnh/Thành phố",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/shipping/provinces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "shipping",
+                "provinces"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is array of provinces', function () { var data = pm.response.json(); pm.expect(data).to.be.an('array'); pm.expect(data.length).to.be.above(60); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_API_02: Lấy danh sách Quận/Huyện theo Tỉnh",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/shipping/districts?province_id=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "shipping",
+                "districts"
+              ],
+              "query": [
+                {
+                  "key": "province_id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Districts returned', function () { var data = pm.response.json(); pm.expect(data).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_API_03: Lấy danh sách Phường/Xã theo Quận/Huyện",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/shipping/wards?district_id=101",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "shipping",
+                "wards"
+              ],
+              "query": [
+                {
+                  "key": "district_id",
+                  "value": "101"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Wards returned', function () { var data = pm.response.json(); pm.expect(data).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_API_04: Tính phí vận chuyển cự ly xa (Đơn dưới 5M)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "district_id",
+                  "value": "101"
+                },
+                {
+                  "key": "ward_code",
+                  "value": "101_01"
+                },
+                {
+                  "key": "province_name",
+                  "value": "Đà Nẵng"
+                },
+                {
+                  "key": "total",
+                  "value": "3200000"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/shipping/calculate-fee",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "shipping",
+                "calculate-fee"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Fee calculated correctly', function () { var d = pm.response.json(); pm.expect(d.status).to.eql('success'); pm.expect(d.final_fee).to.eql(75000); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_API_05: Tính phí vận chuyển chính sách Freeship (Đơn >= 5M)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "district_id",
+                  "value": "101"
+                },
+                {
+                  "key": "ward_code",
+                  "value": "101_01"
+                },
+                {
+                  "key": "province_name",
+                  "value": "Đà Nẵng"
+                },
+                {
+                  "key": "total",
+                  "value": "5500000"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/shipping/calculate-fee",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "shipping",
+                "calculate-fee"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Free shipping granted', function () { var d = pm.response.json(); pm.expect(d.final_fee).to.eql(0); pm.expect(d.is_free_shipping).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Inventory & Stock APIs",
+      "item": [
+        {
+          "name": "TC_API_06: Kiểm tra tồn kho sản phẩm còn hàng",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "1"
+                },
+                {
+                  "key": "quantity",
+                  "value": "2"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/check_inventory.php",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "check_inventory.php"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Stock is available', function () { var d = pm.response.json(); pm.expect(d.status).to.eql('success'); pm.expect(d.stock).to.be.above(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_API_07: Kiểm tra tồn kho yêu cầu vượt quá tồn",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "1"
+                },
+                {
+                  "key": "quantity",
+                  "value": "9999"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/check_inventory.php",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "check_inventory.php"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Stock exceeded error', function () { var d = pm.response.json(); pm.expect(d.status).to.eql('error'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Promotion & Voucher APIs",
+      "item": [
+        {
+          "name": "TC_API_08: Áp dụng mã giảm giá hợp lệ (NEWUSER 15%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "code",
+                  "value": "NEWUSER"
+                },
+                {
+                  "key": "total",
+                  "value": "1000000"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apply_voucher.php",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apply_voucher.php"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Discount applied', function () { var d = pm.response.json(); pm.expect(d.status).to.eql('success'); pm.expect(d.discount).to.eql(150000); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_API_09: Áp dụng mã giảm giá không tồn tại",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "code",
+                  "value": "GSLUXURY_INVALID_999"
+                },
+                {
+                  "key": "total",
+                  "value": "1000000"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apply_voucher.php",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apply_voucher.php"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Voucher rejected', function () { var d = pm.response.json(); pm.expect(d.status).to.eql('error'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Catalog & Reviews & AI APIs",
+      "item": [
+        {
+          "name": "TC_API_10: Lấy danh sách sản phẩm phân trang REST API",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/load_more_products.php?offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "load_more_products.php"
+              ],
+              "query": [
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Products array returned', function () { var d = pm.response.json(); pm.expect(d).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_API_11: Lấy danh sách đánh giá của sản phẩm",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get_reviews.php?product_id=1&limit=4",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "get_reviews.php"
+              ],
+              "query": [
+                {
+                  "key": "product_id",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "4"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Reviews structure returned', function () { var d = pm.response.json(); pm.expect(d).to.have.property('reviews'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC_API_12: Trợ lý AI tư vấn nội thất GS LUXURY",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "message",
+                  "value": "Tư vấn bàn làm việc hiện đại cho văn phòng"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/chat_backend.php",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "chat_backend.php"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('AI reply received', function () { var d = pm.response.json(); pm.expect(d.status).to.eql('success'); pm.expect(d).to.have.property('ai_reply'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081",
+      "type": "string"
+    }
+  ]
+}

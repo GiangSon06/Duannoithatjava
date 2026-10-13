@@ -12,7 +12,7 @@ public class GeminiService {
     public GeminiService(ObjectMapper mapper,@Value("${app.gemini.api-key:}")String apiKey,@Value("${app.gemini.model:gemini-3.1-flash-lite}")String model){this.mapper=mapper;this.apiKey=apiKey==null?"":apiKey.trim();this.model=model;}
     public String reply(String prompt){
         if(apiKey.isBlank()) return fallbackReply(prompt);
-        String[] candidateModels = {model, "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"};
+        String[] candidateModels = {model, "gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-3.1-flash-lite"};
         for (String m : candidateModels) {
             try{
                 Map<String,Object>b=Map.of("contents",List.of(Map.of("parts",List.of(Map.of("text",prompt)))));

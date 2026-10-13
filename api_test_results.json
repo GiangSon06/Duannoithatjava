@@ -1,0 +1,270 @@
+[
+  {
+    "id": "TC_API_01",
+    "name": "Lấy danh mục 63 Tỉnh/Thành phố toàn quốc",
+    "endpoint": "/api/shipping/provinces",
+    "method": "GET",
+    "url": "http://localhost:8081/api/shipping/provinces",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "params": {},
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 448,
+    "size_bytes": 2093,
+    "formatted_body": "[\n  {\n    \"id\": 217,\n    \"name\": \"An Giang\"\n  },\n  {\n    \"id\": 206,\n    \"name\": \"Bà Rịa - Vũng Tàu\"\n  },\n  {\n    \"id\": 205,\n    \"name\": \"Bình Dương\"\n  },\n  {\n    \"id\": 239,\n    \"name\": \"Bình Phước\"\n  },\n  {\n    \"id\": 258,\n    \"name\": \"Bình Thuận\"\n  },\n  {\n    \"id\": 262,\n    \"name\": \"Bình Định\"\n  },\n  {\n    \"id\": 253,\n    \"name\": \"Bạc Liêu\"\n  },\n  {\n    \"id\": 248,\n    \"name\": \"Bắc Giang\"\n  },\n  {\n    \"id\": 245,\n    \"name\": \"Bắc Kạn\"\n  },\n  {\n    \"id\": 249,\n    \"name\": \"Bắc Ninh\"\n  },\n  {\n    \"id\": 213,\n    \"name\": \"Bến Tre\"\n  },\n  {\n    \"id\": 246,\n    \"name\": \"Cao Bằng\"\n  },\n  {\n    \"id\": 252,\n    \"name\": \"Cà Mau\"\n  },\n  {\n    \"id\": 220,\n    \"name\": \"Cần Thơ\"\n  },\n  {\n    \"id\": 207,\n    \"name\": \"Gia Lai\"\n  },\n  {\n    \"id\": 227,\n    \"name\": \"Hà Giang\"\n  },\n  {\n    \"id\": 232,\n    \"name\": \"Hà Nam\"\n  },\n  {\n    \"id\": 201,\n    \"name\": \"Hà Nội\"\n  },\n  {\n    \"id\": 2002,\n    \"name\": \"Hà Nội 02\"\n  },\n  {\n    \"id\": 236,\n    \"name\": \"Hà Tĩnh\"\n  },\n  {\n    \"id\": 267,\n    \"name\": \"Hòa Bình\"\n  },\n  {\n    \"id\": 268,\n    \"name\": \"Hưng Yên\"\n  },\n  {\n    \"id\": 225,\n    \"name\": \"Hải Dương\"\n  },\n  {\n    \"id\": 224,\n    \"name\": \"Hải Phòng\"\n  },\n  {\n    \"id\": 250,\n    \"name\": \"Hậu Giang\"\n  },\n  {\n    \"id\": 202,\n    \"name\": \"Hồ Chí Minh\"\n  },\n  {\n    \"id\": 208,\n    \"name\": \"Khánh Hòa\"\n  },\n  {\n    \"id\": 219,\n    \"name\": \"Kiên Giang\"\n  },\n  {\n    \"id\": 259,\n    \"name\": \"Kon Tum\"\n  },\n  {\n    \"id\": 264,\n    \"name\": \"Lai Châu\"\n  },\n  {\n    \"id\": 211,\n    \"name\": \"Long An\"\n  },\n  {\n    \"id\": 269,\n    \"name\": \"Lào Cai\"\n  },\n  {\n    \"id\": 209,\n    \"name\": \"Lâm Đồng\"\n  },\n  {\n    \"id\": 247,\n    \"name\": \"Lạng Sơn\"\n  },\n  {\n    \"id\": 231,\n    \"name\": \"Nam Định\"\n  },\n  {\n    \"id\": 235,\n    \"name\": \"Nghệ An\"\n  },\n  {\n    \"id\": 233,\n    \"name\": \"Ninh Bình\"\n  },\n  {\n    \"id\": 261,\n    \"name\": \"Ninh Thuận\"\n  },\n  {\n    \"id\": 229,\n    \"name\": \"Phú Thọ\"\n  },\n  {\n    \"id\": 260,\n    \"name\": \"Phú Yên\"\n  },\n  {\n    \"id\": 237,\n    \"name\": \"Quảng Bình\"\n  },\n  {\n    \"id\": 243,\n    \"name\": \"Quảng Nam\"\n  },\n  {\n    \"id\": 242,\n    \"name\": \"Quảng Ngãi\"\n  },\n  {\n    \"id\": 230,\n    \"name\": \"Quảng Ninh\"\n  },\n  {\n    \"id\": 238,\n    \"name\": \"Quảng Trị\"\n  },\n  {\n    \"id\": 218,\n    \"name\": \"Sóc Trăng\"\n  },\n  {\n    \"id\": 266,\n    \"name\": \"Sơn La\"\n  },\n  {\n    \"id\": 298,\n    \"name\": \"Test - Alert - Tỉnh - 001\"\n  },\n  {\n    \"id\": 234,\n    \"name\": \"Thanh Hóa\"\n  },\n  {\n    \"id\": 226,\n    \"name\": \"Thái Bình\"\n  },\n  {\n    \"id\": 244,\n    \"name\": \"Thái Nguyên\"\n  },\n  {\n    \"id\": 223,\n    \"name\": \"Thừa Thiên Huế\"\n  },\n  {\n    \"id\": 212,\n    \"name\": \"Tiền Giang\"\n  },\n  {\n    \"id\": 214,\n    \"name\": \"Trà Vinh\"\n  },\n  {\n    \"id\": 228,\n    \"name\": \"Tuyên Quang\"\n  },\n  {\n    \"id\": 240,\n    \"name\": \"Tây Ninh\"\n  },\n  {\n    \"id\": 215,\n    \"name\": \"Vĩnh Long\"\n  },\n  {\n    \"id\": 221,\n    \"name\": \"Vĩnh Phúc\"\n  },\n  {\n    \"id\": 263,\n    \"name\": \"Yên Bái\"\n  },\n  {\n    \"id\": 265,\n    \"name\": \"Điện Biên\"\n  },\n  {\n    \"id\": 203,\n    \"name\": \"Đà Nẵng\"\n  },\n  {\n    \"id\": 210,\n    \"name\": \"Đắk Lắk\"\n  },\n  {\n    \"id\": 241,\n    \"name\": \"Đắk Nông\"\n  },\n  {\n    \"id\": 204,\n    \"name\": \"Đồng Nai\"\n  },\n  {\n    \"id\": 216,\n    \"name\": \"Đồng Tháp\"\n  }\n]",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "Trả về danh sách 63 tỉnh/thành phố toàn quốc dưới dạng JSON array."
+  },
+  {
+    "id": "TC_API_02",
+    "name": "Lấy danh sách Quận/Huyện theo mã Tỉnh/Thành",
+    "endpoint": "/api/shipping/districts",
+    "method": "GET",
+    "url": "http://localhost:8081/api/shipping/districts?province_id=1",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "params": {
+      "province_id": "1"
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 153,
+    "size_bytes": 153,
+    "formatted_body": "[\n  {\n    \"id\": 101,\n    \"name\": \"Quận / Huyện trung tâm (Tỉnh/Thành)\"\n  },\n  {\n    \"id\": 102,\n    \"name\": \"Khu vực nội thành\"\n  },\n  {\n    \"id\": 103,\n    \"name\": \"Khu vực ngoại thành\"\n  }\n]",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "Trả về danh sách các quận/huyện trực thuộc tỉnh Hà Nội (ID=1)."
+  },
+  {
+    "id": "TC_API_03",
+    "name": "Lấy danh sách Phường/Xã theo mã Quận/Huyện",
+    "endpoint": "/api/shipping/wards",
+    "method": "GET",
+    "url": "http://localhost:8081/api/shipping/wards?district_id=101",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "params": {
+      "district_id": "101"
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 76,
+    "size_bytes": 133,
+    "formatted_body": "[\n  {\n    \"code\": \"101_01\",\n    \"name\": \"Phường / Xã trung tâm\"\n  },\n  {\n    \"code\": \"101_02\",\n    \"name\": \"Khu vực 1\"\n  },\n  {\n    \"code\": \"101_03\",\n    \"name\": \"Khu vực 2\"\n  }\n]",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "Trả về danh sách các phường/xã trực thuộc quận (ID=101)."
+  },
+  {
+    "id": "TC_API_04",
+    "name": "Tính phí vận chuyển chuẩn theo khoảng cách (Đơn dưới 5M)",
+    "endpoint": "/api/shipping/calculate-fee",
+    "method": "POST",
+    "url": "http://localhost:8081/api/shipping/calculate-fee",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    },
+    "params": {
+      "district_id": 101,
+      "ward_code": "101_01",
+      "province_name": "Đà Nẵng",
+      "total": 3200000
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 176,
+    "size_bytes": 276,
+    "formatted_body": "{\n  \"status\": \"success\",\n  \"fee\": 75000,\n  \"service_name\": \"Giao hàng chuẩn (GS LUXURY Express)\",\n  \"leadtime_date\": \"Ngày 20/10/2026\",\n  \"leadtime_note\": \"Dự kiến giao hàng trong 5 ngày làm việc\",\n  \"ghn_fee\": 75000,\n  \"final_fee\": 75000,\n  \"is_free_shipping\": false,\n  \"formatted_fee\": \"75.000đ\"\n}",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "Tính cước chính xác 75.000đ cho tuyến Đà Nẵng, dự kiến giao 5 ngày làm việc."
+  },
+  {
+    "id": "TC_API_05",
+    "name": "Tính phí vận chuyển chính sách Freeship (Đơn từ 5M trở lên)",
+    "endpoint": "/api/shipping/calculate-fee",
+    "method": "POST",
+    "url": "http://localhost:8081/api/shipping/calculate-fee",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    },
+    "params": {
+      "district_id": 101,
+      "ward_code": "101_01",
+      "province_name": "Đà Nẵng",
+      "total": 5500000
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 133,
+    "size_bytes": 390,
+    "formatted_body": "{\n  \"status\": \"success\",\n  \"fee\": 75000,\n  \"service_name\": \"Giao hàng chuẩn (GS LUXURY Express)\",\n  \"leadtime_date\": \"Ngày 20/10/2026\",\n  \"leadtime_note\": \"Dự kiến giao hàng trong 5 ngày làm việc\",\n  \"ghn_fee\": 75000,\n  \"final_fee\": 0,\n  \"is_free_shipping\": true,\n  \"formatted_fee\": \"Miễn phí\",\n  \"promo_note\": \"Đơn hàng từ 5 triệu được miễn phí vận chuyển toàn quốc (tiết kiệm 75.000đ)\"\n}",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "Áp dụng chính sách Freeship GS LUXURY: final_fee=0đ, hiển thị ghi chú tiết kiệm cước."
+  },
+  {
+    "id": "TC_API_06",
+    "name": "Kiểm tra tồn kho sản phẩm hợp lệ (Còn hàng)",
+    "endpoint": "/check_inventory.php",
+    "method": "POST",
+    "url": "http://localhost:8081/check_inventory.php",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    },
+    "params": {
+      "id": 1,
+      "quantity": 2
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 9,
+    "size_bytes": 31,
+    "formatted_body": "{\n  \"status\": \"success\",\n  \"stock\": 86\n}",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "status=success, trả về số lượng tồn kho khả dụng của sản phẩm."
+  },
+  {
+    "id": "TC_API_07",
+    "name": "Kiểm tra tồn kho khi yêu cầu vượt số lượng tồn",
+    "endpoint": "/check_inventory.php",
+    "method": "POST",
+    "url": "http://localhost:8081/check_inventory.php",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    },
+    "params": {
+      "id": 1,
+      "quantity": 9999
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 5,
+    "size_bytes": 93,
+    "formatted_body": "{\n  \"status\": \"error\",\n  \"message\": \"Xin lỗi, số lượng tồn kho chỉ còn 86 sản phẩm.\"\n}",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "status=error, thông báo từ chối kèm số lượng tồn kho tối đa còn lại."
+  },
+  {
+    "id": "TC_API_08",
+    "name": "Áp dụng mã giảm giá hợp lệ (Voucher NEWUSER 15%)",
+    "endpoint": "/apply_voucher.php",
+    "method": "POST",
+    "url": "http://localhost:8081/apply_voucher.php",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    },
+    "params": {
+      "code": "NEWUSER",
+      "total": 1000000
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 25,
+    "size_bytes": 115,
+    "formatted_body": "{\n  \"code\": \"NEWUSER\",\n  \"final\": 850000.0,\n  \"message\": \"Áp dụng mã thành công!\",\n  \"discount\": 150000.0,\n  \"status\": \"success\"\n}",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "status=success, giảm đúng 15% (150.000đ), số tiền thanh toán còn lại là 850.000đ."
+  },
+  {
+    "id": "TC_API_09",
+    "name": "Áp dụng mã giảm giá không tồn tại / hết hạn",
+    "endpoint": "/apply_voucher.php",
+    "method": "POST",
+    "url": "http://localhost:8081/apply_voucher.php",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    },
+    "params": {
+      "code": "GSLUXURY_INVALID_999",
+      "total": 1000000
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 4,
+    "size_bytes": 99,
+    "formatted_body": "{\n  \"status\": \"error\",\n  \"message\": \"Mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa!\"\n}",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "status=error, thông báo mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa."
+  },
+  {
+    "id": "TC_API_10",
+    "name": "Lấy danh sách sản phẩm phân trang RESTful API",
+    "endpoint": "/load_more_products.php",
+    "method": "GET",
+    "url": "http://localhost:8081/load_more_products.php?offset=0",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "params": {
+      "offset": "0"
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 14,
+    "size_bytes": 3050,
+    "formatted_body": "[\n  {\n    \"id\": 14,\n    \"name\": \"Bàn làm việc hiện đại\",\n    \"description\": \"Sản phẩm được hoàn thiện tỉ mỉ, giá cả hợp lý , phù hợp với khách hàng yêu thích sự hiện đại phẩm được hoàn thiện tỉ mỉ, giá cả hợp lý , phù hợp với khách hàng yêu thích sự hiện đại\",\n    \"price\": 6000000.0,\n    \"old_price\": 6000000,\n    \"image_url\": \"picture/sp_1778756769.jpg\",\n    \"category_id\": 4,\n    \"material\": \"Gỗ lim\",\n    \"dimensions\": \"1.8 x 2m\",\n    \"warranty\": \"12 tháng\",\n    \"quantity\": 48\n  },\n  {\n    \"id\": 13,\n    \"name\": \"dang giang son\",\n    \"description\": \"sgg\",\n    \"price\": 10000.0,\n    \"old_price\": null,\n    \"image_url\": \"picture/sp_1773569589.jpg\",\n    \"category_id\": 3,\n    \"material\": null,\n    \"dimensions\": null,\n    \"warranty\": null,\n    \"quantity\": 96\n  },\n  {\n    \"id\": 12,\n    \"name\": \"tu quan ao cach tan\",\n    \"description\": \"San pham duoc tao ra tu Giang Son\",\n    \"price\": 5000000.0,\n    \"old_price\": null,\n    \"image_url\": \"picture/sp_1765929109.jpg\",\n    \"category_id\": 4,\n    \"material\": \"gỗ tự nhiên\",\n    \"dimensions\": \"3x5m\",\n    \"warranty\": \"12 tháng\",\n    \"quantity\": 25\n  },\n  {\n    \"id\": 10,\n    \"name\": \"Bàn làm việc đơn giản\",\n    \"description\": \"Bàn làm việc chân sắt, mặt gỗ đơn giản. Phong cách công nghiệp, tiết kiệm chi phí nhưng vẫn đảm bảo độ bền cao.\",\n    \"price\": 3200000.0,\n    \"old_price\": null,\n    \"image_url\": \"picture/banlamviec1.jpg\",\n    \"category_id\": 4,\n    \"material\": \"Mặt gỗ công nghiệp, Chân sắt sơn tĩnh điện\",\n    \"dimensions\": \"1.2m x 0.6m\",\n    \"warranty\": \"12 tháng\",\n    \"quantity\": 18\n  },\n  {\n    \"id\": 9,\n    \"name\": \"Bàn làm việc cách tân\",\n    \"description\": \"Bàn làm việc góc, có ngăn kéo và kệ sách tích hợp. Thiết kế tối ưu cho các công việc cần nhiều không gian lưu trữ.\",\n    \"price\": 3000000.0,\n    \"old_price\": null,\n    \"image_url\": \"picture/banlamviec2.jpg\",\n    \"category_id\": 4,\n    \"material\": \"Gỗ MDF chống ẩm\",\n    \"dimensions\": \"1.4m x 0.6m\",\n    \"warranty\": \"18 tháng\",\n    \"quantity\": 24\n  },\n  {\n    \"id\": 8,\n    \"name\": \"Sofa đơn giản\",\n    \"description\": \"Bộ sofa đôi nhỏ gọn, bọc vải bố canvas, đệm rời dễ dàng tháo giặt. Phù hợp cho căn hộ mini hoặc góc đọc sách.\",\n    \"price\": 6500000.0,\n    \"old_price\": null,\n    \"image_url\": \"picture/sofa1.jpg\",\n    \"category_id\": 3,\n    \"material\": \"Khung gỗ tràm, Vải bố\",\n    \"dimensions\": \"1.8m x 0.8m\",\n    \"warranty\": \"12 tháng\",\n    \"quantity\": 0\n  },\n  {\n    \"id\": 6,\n    \"name\": \"Tủ quần áo cách tân mang thiên hướng hiện đại\",\n    \"description\": \"Tủ quần áo lớn 4 cánh, kết hợp ngăn kéo tiện dụng. Phong cách Bắc Âu, màu sắc trung tính dễ dàng kết hợp với nội thất khác.\",\n    \"price\": 6500000.0,\n    \"old_price\": null,\n    \"image_url\": \"picture/tu1.webp\",\n    \"category_id\": 1,\n    \"material\": \"Gỗ sồi nhập khẩu\",\n    \"dimensions\": \"2m x 2.2m\",\n    \"warranty\": \"12 tháng\",\n    \"quantity\": 42\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Tủ quần áo hiện đại\",\n    \"description\": \"Tủ quần áo 3 cánh mở, thiết kế cánh trượt tiết kiệm không gian. Bên trong chia ngăn hợp lý, có thanh treo đèn LED tự động.\",\n    \"price\": 7000000.0,\n    \"old_price\": null,\n    \"image_url\": \"picture/tu2.jpg\",\n    \"category_id\": 1,\n    \"material\": \"Gỗ công nghiệp HDF\",\n    \"dimensions\": \"1.8m x 2.2m\",\n    \"warranty\": \"24 tháng\",\n    \"quantity\": 22\n  }\n]",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "Trả về mảng JSON sản phẩm gồm ID, tên, giá bán, hình ảnh và chất liệu."
+  },
+  {
+    "id": "TC_API_11",
+    "name": "Lấy danh sách đánh giá của sản phẩm (Reviews API)",
+    "endpoint": "/get_reviews.php",
+    "method": "GET",
+    "url": "http://localhost:8081/get_reviews.php?product_id=1&limit=4",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "params": {
+      "product_id": "1",
+      "limit": "4"
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 6,
+    "size_bytes": 55,
+    "formatted_body": "{\n  \"has_more\": false,\n  \"reviews\": [],\n  \"total\": 0,\n  \"remaining\": 0\n}",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "Trả về cấu trúc reviews, has_more, remaining và tổng số đánh giá."
+  },
+  {
+    "id": "TC_API_12",
+    "name": "Trợ lý AI tư vấn nội thất GS LUXURY (Gemini AI API)",
+    "endpoint": "/chat_backend.php",
+    "method": "POST",
+    "url": "http://localhost:8081/chat_backend.php",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json"
+    },
+    "params": {
+      "message": "Tư vấn bàn làm việc hiện đại cho văn phòng"
+    },
+    "status_code": 200,
+    "status_text": "200 OK",
+    "dur_ms": 1134,
+    "size_bytes": 491,
+    "formatted_body": "{\n  \"reply\": \"Dạ GS LUXURY có các mẫu Bàn làm việc cách tân (3.000.000đ) và Bàn làm việc đơn giản (3.200.000đ) bằng gỗ MDF chống ẩm rất tiện dụng. Mời bạn tham khảo tại mục Sản phẩm ạ!\",\n  \"ai_reply\": \"Dạ GS LUXURY có các mẫu Bàn làm việc cách tân (3.000.000đ) và Bàn làm việc đơn giản (3.200.000đ) bằng gỗ MDF chống ẩm rất tiện dụng. Mời bạn tham khảo tại mục Sản phẩm ạ!\",\n  \"status\": \"success\"\n}",
+    "is_pass": true,
+    "expected_status": 200,
+    "expected_note": "status=success, trợ lý AI phản hồi thông tin sản phẩm và chính sách cửa hàng."
+  }
+]

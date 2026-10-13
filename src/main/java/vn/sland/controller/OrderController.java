@@ -1,5 +1,6 @@
 package vn.sland.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,7 +28,7 @@ public class OrderController extends BaseController {
         this.delivery = delivery;
     }
 
-    @GetMapping("/checkout.php")
+    @GetMapping({"/checkout.php", "/cart.php", "/cart"})
     String checkout(Model m, HttpSession s) {
         if (!WebUtil.logged(s)) return "redirect:/login.php";
         base(m, s, "Thanh toán");
@@ -92,7 +93,7 @@ public class OrderController extends BaseController {
     }
 
     @GetMapping("/momo_payment.php")
-    String momoPayment(Model m, HttpSession s) {
+    String momoPayment(HttpServletRequest req, Model m, HttpSession s) {
         if (!WebUtil.logged(s)) return "redirect:/login.php";
         @SuppressWarnings("unchecked")
         Map<String, Object> p = (Map<String, Object>) s.getAttribute("pending_order");
@@ -105,7 +106,12 @@ public class OrderController extends BaseController {
         long pendingShip = WebUtil.longv(p.get("shipping_fee"));
         long amount = Math.max(1000L, Math.round(raw - WebUtil.dbl(v.get("discount")) + pendingShip));
         String momoOrder = "GSLUXURY" + System.currentTimeMillis();
-        var resp = momo.createPayment(momoOrder, amount, "Thanh toan don hang GS LUXURY", "");
+
+        String dynamicBaseUrl = WebUtil.resolveBaseUrl(req, momo.getRedirectUrl().replaceAll("/momo_return\\.php$", ""));
+        String dynamicRedirect = dynamicBaseUrl + "/momo_return.php";
+        String dynamicIpn = dynamicBaseUrl + "/momo_ipn.php";
+
+        var resp = momo.createPayment(momoOrder, amount, "Thanh toan don hang GS LUXURY", "", dynamicRedirect, dynamicIpn);
         if (WebUtil.intv(resp.get("resultCode")) == 0 && resp.get("payUrl") != null) {
             s.setAttribute("momo_order_id", momoOrder);
             return "redirect:" + resp.get("payUrl");
